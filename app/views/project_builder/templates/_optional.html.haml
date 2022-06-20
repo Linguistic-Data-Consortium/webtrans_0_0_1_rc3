@@ -1,0 +1,76 @@
+%div
+  Include news (blog)?
+  %label.inline
+    = radio_button_tag("class_def[include_news]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[include_news]", "no")
+    No
+%div#news_div{ style: "display: none;"}
+  Create or link to existing news page?
+  %label.inline
+    = radio_button_tag("class_def[news_createorlink]", "create")
+    Create
+  %label.inline
+    = radio_button_tag("class_def[news_createorlink]", "link")
+    Link
+%div#news_link_div{ style: "display: none;"}
+  = text_field_tag("class_def[news_link]")
+
+%div
+  Include forum?
+  %label.inline
+    = radio_button_tag("class_def[include_forum]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[include_forum]", "no")
+    No
+
+%div#forum_div{ style: "display: none;"}
+  Create or link to existing forum?
+  %label.inline
+    = radio_button_tag("class_def[forum_createorlink]", "create")
+    Create
+  %label.inline
+    = radio_button_tag("class_def[forum_createorlink]", "link")
+    Link
+
+%div#forum_link_div{ style: "display: none;"}
+  = text_field_tag("class_def[forum_link]")
+
+%div
+  Include tutorial?
+  %label.inline
+    = radio_button_tag("class_def[include_tutorial]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[include_tutorial]", "no")
+    No
+%div#tutorial_div{ style: "display: none;"}
+  Create or link to existing tutorial?
+  %label.inline
+    = radio_button_tag("class_def[tutorial_createorlink]", "create")
+    Create
+  %label.inline
+    = radio_button_tag("class_def[tutorial_createorlink]", "link")
+    Link
+%div#tutorial_link_div{ style: "display: none;"}
+  = text_field_tag("class_def[forum_link]")
+%div
+  Include reference?
+  %label.inline
+    = radio_button_tag("class_def[include_reference]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[include_reference]", "no")
+    No
+%div#reference_div{ style: "display: none;"}
+  Create or link to existing reference?
+  %label.inline
+    = radio_button_tag("class_def[reference_createorlink]", "create")
+    Create
+  %label.inline
+    = radio_button_tag("class_def[reference_createorlink]", "link")
+    Link
+%div#reference_link_div{ style: "display: none;"}
+  = text_field_tag("class_def[reference_link]")

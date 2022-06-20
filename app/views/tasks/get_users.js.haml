@@ -1,0 +1,4 @@
+$('.user_select').empty();
+$('.user_select').append( $('<option>Select the user</option>') );
+-@users.each do |user|
+  $('.user_select').append( $('<option value="#{user.id}">#{user.name}</option>') );

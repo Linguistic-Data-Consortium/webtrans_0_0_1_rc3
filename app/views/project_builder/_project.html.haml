@@ -1,0 +1,18 @@
+.modal-fade-screen
+  .modal-inner
+    .modal-close
+    .modal-header New Project
+    = form_for @project, :remote => true, format: :json do |f|
+      .modal-body
+        %div
+          %label.inline Name (short name)
+          = f.text_field :name
+          %label.inline Title (displayed on Project Page)
+          = f.text_field :title
+          %label.inline Subtitle (displayed on Project Page)
+          = f.text_field :subtitle
+          %label.inline About (about your project and tasks, accepts markdown)
+          = f.text_area :about
+          %label.inline TODO: Project Image Upload
+      .modal-footer
+        = f.submit 'Save', :class => 'btn btn-primary close-btn'

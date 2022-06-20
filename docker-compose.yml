@@ -1,0 +1,50 @@
+version: '3'
+services:
+  web:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "3005:3000"
+    volumes:
+      - .:/ua
+    env_file:
+      - .envv/development/database
+      - .envv/development/web
+    #  - .envv/development/aws
+    environment:
+      - RAILS_ENV=development
+      - VITE_RUBY_HOST=vite
+    depends_on:
+      - database
+    # command: sleep 300
+  vite:
+    build:
+      context: .
+      target: dev
+    entrypoint: ./docker-vite-entrypoint.sh
+    ports:
+      - 3036:3036
+    volumes:
+      - .:/ua
+    env_file:
+      - .envv/development/database
+      - .envv/development/web
+    environment:
+      - DEBUG='*vite*'
+      - RAILS_ENV=development
+      - VITE_RUBY_HOST=0.0.0.0
+    depends_on:
+      - database
+  redis:
+    image: redis
+  database:
+    image: postgres:13
+    ports:
+      - 5433:5432
+    env_file:
+      - .envv/development/database
+    volumes:
+      - db_data:/var/lib/postgresql/data
+volumes:
+  db_data:

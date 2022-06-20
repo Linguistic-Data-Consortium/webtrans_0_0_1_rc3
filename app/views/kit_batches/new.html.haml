@@ -1,0 +1,99 @@
+%div{ style: 'display: flex; justify-content: center' }
+  %div
+    %h1 Create New Kit Batch
+    %label A Kit Batch can be used to create a set of kits.
+    %hr
+%div{ style: 'display: flex; justify-content: center' }
+  =form_for(@kit_batch) do |f|
+    %div
+      %label.inline Name
+      =f.text_field :name
+    %div
+      Choose a unique name.
+    %hr
+    %div
+      %label.inline Task ID
+      =f.text_field :task_id
+    %div
+      The task id is required.
+    %hr
+    %div
+      Creation Type
+      .new-well
+        - %w[ document multi_post ltf file kit audio speaker manifest data_set ].each do |x|
+          %div
+            %label.inline
+              = x
+            =f.radio_button :creation_type, x
+    %div
+      Types document, multi_post, ltf, and audio all indicate that the input lines below are uids in uget.
+    %div
+      "document" is a regular source document that will be treated as character based.
+    %div
+      "ltf" will treat the source doc as token based by serving the LTF.
+    %div
+      "multi_post" is a special case of source doc; you'd know if you need to use it.
+    %div
+      "audio" refers to audio files rather than text.
+    %div
+      "file" is some sort of file input on disk that isn't a source document; a path is required.
+    %div
+      "kit" means the given uids refer to kits already in webann, which will be used as input.
+    %div
+      "data_set" means a tab-delimited file or list of text input with the first line being the header.
+    %hr
+    %div.expander
+      = link_to "Options", 'javascript:void(0)', class: 'expander-trigger expander-hidden'
+      .expander-content
+        %div
+          %label.inline User ID
+          =f.text_field :user_id
+        %div
+          Specify a user id only if you want to assign all kits to the same user.
+        %div
+          Note that you can set all kits to this user, but override for individual kits
+        %div
+          with user_id=X.
+        %hr
+        %div
+          %label.inline Kit Creator
+          =f.select :kit_creator, options_for_select(@creator_options), :prompt => 'New Kit Creator...'
+        %div
+          Typically the kit creator can be left blank, but sometimes a special type is required.
+        %hr
+        %div
+          Block original user?
+          .new-well
+            %div
+              %label.inline True
+              =f.radio_button :block, "true"
+            %div
+              %label.inline False
+              =f.radio_button :block, "false"
+        %div
+          This only applies to creating kits from other kits.
+        %hr
+        %div
+          Dual annotation
+          %div
+            %label.inline Number of Multiples
+            =f.number_field :multiples_count
+            %div
+              .new-well
+                %div
+                  %label.inline Sequential
+                  =f.radio_button :dual_mode, "sequential"
+                %div
+                  %label.inline Parallel
+                  =f.radio_button :dual_mode, "parallel"
+    %hr
+    %div
+      %label Upload a file with list of doc/kit/fileids
+      =f.file_field :file
+    %div
+      %label OR input list (docids, files, or kits)
+      <textarea name="kit_batch[kit_creations]" id="kit_batch_kit_creations" cols="50" rows="30"></textarea>
+    = f.hidden_field :created_by, value: @current_user.id
+    = f.hidden_field :ready, value: true
+    %div
+      =f.submit 'Create', :class => 'btn btn-primary'

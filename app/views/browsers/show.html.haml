@@ -1,0 +1,7 @@
+-content_for :head do
+  = javascript_include_tag "nodes"
+
+= render 'tabs'
+
+-content_for :action_specific_js do
+  != "ldc_nodes.browse('#@mode')"

@@ -1,0 +1,18 @@
+#new_preference_type.modal
+  %label
+    .modal-trigger
+      %button.btn-danger Create Preference Type
+  .modal-fade-screen
+    .modal-inner
+      .modal-close
+      .modal-body
+        %h1 Add Preference Type
+        = form_for(preference_type) do |f|
+          %label Name
+          = f.text_field :name
+          %label Task Id
+          = f.text_field :task_id
+          %label Values
+          = f.text_field :values
+          = f.submit 'Save', :class => 'btn btn-primary'
+

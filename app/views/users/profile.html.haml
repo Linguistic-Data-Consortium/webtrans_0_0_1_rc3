@@ -1,0 +1,72 @@
+-content_for :head do
+  =javascript_include_tag 'user_profile'
+
+.full
+  ="Welcome, #{@user.name}!"
+.full
+  .half
+    .flexleft
+      =link_to "Go to Dashboard", user_path
+  .half
+    =link_to "Edit Profile", edit_user_path(current_user)
+.half
+  %h1 My Contact Information
+  .halfbox
+    -if !@pii.nil?
+      .row Name: #{@pii.fname} #{@pii.lname}
+      .row Email: #{@pii.email}
+      .row Contact Number: #{@pii.contact_phone}
+      .row Skype: #{@pii.skype}
+.half
+  %h1 My Languages
+  .halfbox
+    -@languages_for_user.each do |l|
+      .row=l.ref_name
+-if @task_types_for_user.size > 0
+  .full
+    .half
+      %h1 My Training Information
+      %table.display#user_quals
+        %thead
+          %tr
+            %th Project
+            %th Language
+            %th Task Type
+            %th Status
+        %tbody
+          -@task_types_for_user.each do |t|
+            %tr
+              %td= t.project.name
+              %td= t.language.ref_name
+              %td= t.task_type.name
+              %td= t.status
+-if @compensations.size > 0 
+  .full
+    %h1 My Compensation
+  .full
+    %table#user_compensations.display
+      %thead
+        %tr
+          %th Project
+          %th Task
+          %th Units Completed
+          %th Rate
+          %th Total Earned
+          %th Total Invoiced
+          %th Not Yet Invoiced
+      %tbody
+        = render partial: 'user_compensation', collection: @compensations, as: :compensation
+  .row-around
+    .invoice
+      -if @unpaid_projects.count > 0
+        %a.invoicelink
+          %i.fa.fa-money.fa-4x
+          = form_for :invoice, :url => preview_invoice_path, :method => :get, :html => {:id => "preview"} do |f|
+            = collection_select(:invoice, :project_id, @unpaid_projects, :id, :name, {:include_blank => "Select project"}, {:id=>'project_select'})
+            =f.submit "Preview New Invoice"
+      %a.invoicelink{ :href => invoices_path }
+        %i.fa.fa-file-text.fa-4x
+        %div View Submitted Invoices
+
+-content_for :action_specific_js do
+  ldc_user_profile.init_index();

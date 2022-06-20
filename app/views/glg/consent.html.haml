@@ -1,0 +1,19 @@
+.ntl-home
+  %h1.GLGTitleLabel
+    Play Games, Make the World Smarter
+  #consent-body
+    %p
+      University of Pennsylvania researchers build games to study languages,
+      improve teaching and to help computers work with language.
+    %p
+      In Name That Language you listen to short audio clips and try to identify the
+      language spoken. You get points for correct answers. After too many incorrect answers,
+      the game ends.The game generates data for research but we hope you find it fun,
+      challenging, and educational.
+    %p
+      You may
+      = link_to "play the game", "/ntl/play", {:method => :post }
+      anonymously or
+      %a{ href: "/users/new" } create an account.
+    %p
+      By playing you consent to provide your game results for research and educational purposes.

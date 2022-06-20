@@ -1,0 +1,18 @@
+%ul
+  - @enrollments.each do |enrollment|
+    - next if enrollment.collection_id == 9
+    %li.no-list-bullet
+      %a.btn.btn-primary{:href => enrollment_path(enrollment)}
+        ="#{enrollment.collection_external_name || enrollment.collection_name} Status"
+        -if enrollment.withdrawn
+          %strong WITHDRAWN
+        %i.icon-arrow-right
+        
+-if @managed_collections.count > 0
+  .row-fluid
+    .offset1
+      %h3 Managed Collections
+      %ul
+        -@managed_collections.each do |collection|
+          %li.no-list-bullet=link_to collection.external_name, collection_path(collection), :target => '_blank'
+      

@@ -1,0 +1,236 @@
+window.ldc_project_builder = ( ->
+    display_alert: (type, msg) ->
+        this.clear_alerts();
+        $('.home_title').append(this.create_alert_html(type, msg))
+
+    clear_alerts: ->
+    	$('.flash').remove()
+
+    create_alert_html: (type, msg) ->
+        '<div class="flash flash-' + type + '">' + msg + '<button class="close">×</button></div>'
+
+    init: ->
+        ldc_project_builder.watch_for_ajax()
+        $('body').on 'click', '.project_build', (e) ->
+            e.stopPropagation()
+            step = $(this).attr('id')
+            req = ldc_project_builder.get_request(step)
+            ldc_project_builder.make_request(step, req)
+        $('body').on 'click', '.template__nav--prev', (e) ->
+            e.preventDefault()
+            $(this).parent().parent().hide()
+            $(this).parent().parent().prev().show()
+        $('body').on 'click', '.template__nav--next', (e) ->
+            e.preventDefault()
+            $(this).parent().parent().hide()
+            $(this).parent().parent().next().show()
+        $('body').on 'click', '.template__selection', (e) ->
+            e.preventDefault()
+            $(this).parent().hide()
+            $(this).parent().next().show()
+            step = "templateselection"
+            val = $(this).attr('id')
+            req = ldc_project_builder.get_request(step, val)
+            ldc_project_builder.make_request(step, req)
+            # send request for the particular template and put it in .template-specific
+
+    handle_form_reveals: () ->
+        $('.edit_class_def').on 'click', 'input:radio', (e) ->
+            switch $(e.target).attr('id')
+                when 'class_def_language_selector_yes' then $('#limit_lang_div').show()
+                when 'class_def_limit_languages_yes' then $('#langs_div').show()
+                when 'class_def_include_news_yes' then $('#news_div').show()
+                when 'class_def_news_createorlink_link' then $('#news_link_div').show()
+                when 'class_def_include_forum_yes' then $('#forum_div').show()
+                when 'class_def_forum_createorlink_link' then $('#forum_link_div').show()
+                when 'class_def_include_tutorial_yes' then $('#tutorial_div').show()
+                when 'class_def_tutorial_createorlink_link' then $('#tutorial_link_div').show()
+                when 'class_def_include_reference_yes' then $('#reference_div').show()
+                when 'class_def_reference_createorlink_link' then $('#reference_link_div').show()
+                when 'class_def_item_specific_yes' then $('#item_specific_div').show()
+                when 'class_def_text_annotation_yes' then $('#text_annotation_fields').show()
+                when 'class_def_input_primary_yes' then $('#primary').show()
+                when 'class_def_input_secondary_yes' then $('#secondary').show()
+                when 'class_def_audio_response_yes'
+                    $('#level_test').show()
+                    $('#level_meter').show()
+
+                when 'class_def_item_specific_no'
+                    $('#item_specific_div').hide()
+                when 'class_def_language_selector_no'
+                    $('#limit_lang_div').hide()
+                    $('#class_def_limit_languages_yes').prop('checked', false);
+                    $('#langs_div').hide()
+                when 'class_def_limit_languages_no' then $('#langs_div').hide()
+                when 'class_def_include_news_no'
+                    $('#news_div').hide()
+                    $('#class_def_news_createorlink_link').prop('checked', false);
+                    $('#news_link_div').hide()
+                when 'class_def_news_createorlink_create' then $('#news_link_div').hide()
+                when 'class_def_include_forum_no'
+                    $('#forum_div').hide()
+                    $('#class_def_forum_createorlink_link').prop('checked', false);
+                    $('#forum_link_div').hide()
+                when 'class_def_forum_createorlink_create' then $('#forum_link_div').hide()
+                when 'class_def_include_tutorial_no'
+                    $('#tutorial_div').hide()
+                    $('#class_def_tutorial_createorlink_link').prop('checked', false);
+                    $('#tutorial_link_div').hide()
+                when 'class_def_tutorial_createorlink_create' then $('#tutorial_link_div').hide()
+                when 'class_def_include_reference_no'
+                    $('#reference_div').hide()
+                    $('#class_def_reference_createorlink_link').prop('checked', false);
+                    $('#reference_link_div').hide()
+                when 'class_def_reference_createorlink_create' then $('#reference_link_div').hide()
+                when 'class_def_text_annotation_no' then $('#text_annotation_fields').hide()
+                when 'class_def_input_primary_no' then $('#primary').hide()
+                when 'class_def_input_secondary_no' then $('#secondary').hide()
+                when 'class_def_audio_response_no'
+                    $('#level_test').hide()
+                    $('#level_meter').hide()
+
+    make_request: (step, req) ->
+        $.get req, (data) ->
+            div = ldc_project_builder.determine_div(step)
+            div.html data.html
+            if step is 'template'
+                ldc_project_builder.handle_form_reveals()
+                ldc_project_builder.hide_template_sections()
+            if step is 'task'
+                ldc_autocompletes.init()
+            if step is 'dataset'
+                ldc_project_builder.autofill_fields_dataset()
+        , 'json'
+
+    determine_div: (step) ->
+        if step is 'template' or step is 'tool'
+            div = $('#tool_editor')
+        else if step is 'templateselection'
+            div = $('.templatespecific')
+        else
+            ldc_nodes.open_modal '#edit_project_builder_modal'
+            div = $('#edit_project_builder_modal')
+        return div
+
+    get_request: (step, val = null) ->
+        req = "/project_builder/#{step}"
+        if step is 'task' or step is 'choose_task' and $('#edit_project_builder_modal').data()["project"]
+            req += '?project_id=' +
+                $('#edit_project_builder_modal')
+                .data()["project"]["id"]
+                .toString()
+        if step is 'choose_dataset' and $('#edit_project_builder_modal').data()["task"]
+            req += '?task_id=' +
+            $('#edit_project_builder_modal')
+            .data()["task"]["id"]
+            .toString() + '&project_id=' +
+            $('#edit_project_builder_modal')
+            .data()["project"]["id"]
+            .toString()
+        if step is 'widget'
+            req += '?widget_type=' +
+                $('#widget-type-select')
+                .val()
+            req += '&class_def_id=' +
+                $('#edit_project_builder_modal')
+                .data()["class_def"]["id"]
+                .toString() + '&project_id=' +
+                $('#edit_project_builder_modal')
+                .data()["project"]["id"]
+                .toString()
+        if step is 'template'
+            req += '?class_def_id=' +
+                $('#edit_project_builder_modal')
+                .data()["class_def"]["id"]
+                .toString() +
+                '&task=' + $('#edit_project_builder_modal')
+                .data()["task"]["id"]
+                .toString()  + '&project_id=' +
+                $('#edit_project_builder_modal')
+                .data()["project"]["id"]
+                .toString()
+        if step is 'templateselection'
+            req += '?template=' + val +
+                '&task=' + $('#edit_project_builder_modal')
+                .data()["task"]["id"]
+                .toString() + '&project_id=' +
+                $('#edit_project_builder_modal')
+                .data()["project"]["id"]
+                .toString()
+        return req
+
+    get_data_from_dom: (sel) ->
+        console.log($(sel).data())
+
+    watch_for_ajax: ->
+        that = this
+        $("body").on("ajax:success", (event) ->
+            [data, status, xhr] = event.detail
+            res = JSON.parse(xhr.responseText)
+            that.handle_response(res)
+        ).on "ajax:error", (event) ->
+            ldc_project_builder.display_alert('error', 'Request error.')
+
+    handle_response: (res) ->
+        if res["project"]
+            ldc_project_builder.display_alert('success', 'Project created or selected successfully.')
+            $('#edit_project_builder_modal').data()["project"] = res["project"]
+            $('#project').attr('disabled', 'disabled')
+            $('#choose_project').attr('disabled', 'disabled')
+            $('#task').removeAttr('disabled')
+            $('#choose_task').removeAttr('disabled')
+            $('a.tab-link').attr('disabled', 'disabled')
+            $('.tab-header-and-content a.tab-link').eq(1).removeAttr('disabled')
+            $('.tab-header-and-content a.tab-link').eq(1).click()
+        else if res["task"]
+            ldc_project_builder.display_alert('success', 'Task created or selected successfully.')
+            $('#edit_project_builder_modal').data()["task"] = res["task"]
+            $('#edit_project_builder_modal').data()["class_def"] = res["class_def"]
+            $('#task').attr('disabled', 'disabled')
+            $('#choose_task').attr('disabled', 'disabled')
+            $('#dataset').removeAttr('disabled')
+            $('#choose_dataset').removeAttr('disabled')
+            $('a.tab-link').attr('disabled', 'disabled')
+            $('.tab-header-and-content a.tab-link').eq(2).removeAttr('disabled')
+            $('.tab-header-and-content a.tab-link').eq(2).click()
+        else if res["data_set"]
+            ldc_project_builder.display_alert('success', 'Dataset created or selected successfully.')
+            $('#edit_project_builder_modal').data()["dataset"] = res["data_set"]
+            $('#dataset').attr('disabled', 'disabled')
+            $('#choose_dataset').attr('disabled', 'disabled')
+            # $('#skip_dataset').attr('disabled', 'disabled')
+            $('#tool').removeAttr('disabled')
+            $('#template').removeAttr('disabled')
+            $('a.tab-link').attr('disabled', 'disabled')
+            $('.tab-header-and-content a.tab-link').eq(3).removeAttr('disabled')
+            $('.tab-header-and-content a.tab-link').eq(3).click()
+        else if res["node_class"]
+            ldc_project_builder.display_alert('success', 'Widget created.')
+            $('#edit_project_builder_modal').data()["widgets"] ||= []
+            $('#edit_project_builder_modal').data()["widgets"].push(res["node_class"])
+            ldc_project_builder.update_widget_list()
+        else if res["message"]
+            ldc_project_builder.display_alert('success', res["message"])
+        else if res["error"]
+            console.log("should render error")
+            ldc_project_builder.display_alert('error', res["error"])
+
+    update_widget_list: ->
+        widgets = $('#edit_project_builder_modal').data()["widgets"]
+        tbody = $('.widgets-list tbody')
+        widget_rows = ''
+        for widget in widgets
+          widget_rows += "<tr><td>#{widget.name.split(':')[1]}</td><td>#{widget.type}</td></tr>"
+        tbody.html(widget_rows)
+
+    autofill_fields_dataset: ->
+        task_id = $('#edit_project_builder_modal')
+        .data()["task"]["id"]
+        .toString()
+        $('#data_set_for_task').val(task_id)
+    
+    hide_template_sections: ->
+        $('.optional, .templateselect, .template').hide()
+    
+
+)()

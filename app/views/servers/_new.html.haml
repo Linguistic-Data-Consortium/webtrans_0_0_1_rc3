@@ -1,0 +1,29 @@
+.text-2xl.font-medium.pb-4
+  Single User Installation
+%p
+  When installing on a local machine that will only be used by one person,
+  you can use this mode to simplify things.  This button will create an admin user
+  and log you in as that user.
+.flex.flex-row-reverse
+  = button_to "Initialize", "/users/single", class: "justify-center rounded-md border border-transparent shadow-sm px-3 py-1 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+%hr.mt-4
+.text-2xl.font-medium.py-4
+  Multi User Installation
+%p
+  This is the default mode, which allows multiple users and doesn't set up any
+  automatically.  It could still be used on a local machine, if you're going to
+  develop the app, let others use it from your machine, etc.  More likely it will
+  be used on a true server, therefore it will be remote for all users.  The field below
+  for Server Name can be left empty.
+%div.mt-8
+  .modal-body.max-w-xs.mx-auto
+    .modal-fade-screen
+      .modal-inner
+        .modal-close
+          = form_for(@server) do |f|
+            .mx-auto.mb-4
+              .block.mb-2
+                %label Server Name
+              .block.mb-2
+                = f.text_field :name, class: 'border rounded w-full', placeholder: 'can be left empty'
+            = f.submit 'Initialize', :class => "w-full justify-center rounded-md border border-transparent shadow-sm px-3 py-1 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"

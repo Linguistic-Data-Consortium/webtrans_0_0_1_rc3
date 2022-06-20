@@ -1,0 +1,77 @@
+%div
+  Waveform or Slider display?
+  %label.inline
+    = radio_button_tag("class_def[waveform_slider]", "waveform")
+    Waveform
+  %label.inline
+    = radio_button_tag("class_def[waveform_slider]", "slider")
+    Slider
+%div
+  Control style
+  %label.inline
+    = radio_button_tag("class_def[control_style]", "playpause_restart")
+    Play/pause and restart
+  %label.inline
+    = radio_button_tag("class_def[control_style]", "play_pause_stop")
+    Play, Pause, Stop
+%div
+  Start and end time display?
+  %label.inline
+    = radio_button_tag("class_def[start_end]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[start_end]", "no")
+    No
+%div
+  Show time counter?
+  %label.inline
+    = radio_button_tag("class_def[time_counter]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[time_counter]", "no")
+    No
+%div
+  Previous / next item controls?
+  %label.inline
+    = radio_button_tag("class_def[previous_next_controls]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[previous_next_controls]", "no")
+    No
+%div
+  First / last item controls?
+  %label.inline
+    = radio_button_tag("class_def[first_last_controls]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[first_last_controls]", "no")
+    No
+%div
+  Buttons (one per line)
+  = text_area_tag("class_def[buttons]")
+%div
+  Allow skip?
+  %label.inline
+    = radio_button_tag("class_def[skip]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[skip]", "no")
+    No
+%div
+  Allow "report bad clip"? 
+  %label.inline
+    = radio_button_tag("class_def[report]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[report]", "no")
+    No
+%div
+  Text box for annotation?
+  %label.inline
+    = radio_button_tag("class_def[text_annotation]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[text_annotation]", "no")
+    No
+%div
+  %input{ :type => 'hidden', :id => "template_type", :name => "template_type", :value => 'audio'}

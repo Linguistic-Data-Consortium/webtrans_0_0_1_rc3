@@ -1,0 +1,156 @@
+fieldset {
+}
+
+x{
+    background-color: transparent;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+legend {
+}
+
+x{
+    font-weight: 600;
+  margin-bottom: $small-spacing / 2;
+  padding: 0;
+}
+
+label {
+}
+
+x{
+    display: block;
+  font-weight: 600;
+  margin-bottom: $small-spacing / 2;
+}
+
+input,
+select,
+textarea {
+}
+
+x{
+    display: block;
+  font-family: $base-font-family;
+  font-size: $base-font-size;
+}
+
+#{$all-text-inputs} {
+}
+
+x{
+    appearance: none;
+  background-color: $base-background-color;
+  border: $base-border;
+  border-radius: $base-border-radius;
+  box-shadow: $form-box-shadow;
+  box-sizing: border-box;
+  margin-bottom: $small-spacing;
+  padding: $base-spacing / 3;
+  transition: border-color $base-duration $base-timing;
+  width: 100%;
+
+  &:hover {
+}
+
+x{
+      border-color: shade($base-border-color, 20%);
+  }
+
+  &:focus {
+}
+
+x{
+      border-color: $action-color;
+    box-shadow: $form-box-shadow-focus;
+    outline: none;
+  }
+
+  &:disabled {
+}
+
+x{
+      background-color: shade($base-background-color, 5%);
+    cursor: not-allowed;
+
+    &:hover {
+}
+
+x{
+        border: $base-border;
+    }
+  }
+
+  &::placeholder {
+}
+
+x{
+      color: tint($base-font-color, 40%);
+  }
+}
+
+textarea {
+}
+
+x{
+    resize: vertical;
+}
+
+[type="checkbox"],
+[type="radio"] {
+}
+
+x{
+    display: inline;
+  margin-right: $small-spacing / 2;
+}
+
+[type="file"] {
+}
+
+x{
+    margin-bottom: $small-spacing;
+  width: 100%;
+}
+
+select {
+}
+
+x{
+    margin-bottom: $small-spacing;
+  width: 100%;
+}
+
+.cleanbox {
+}
+
+x{
+    background-color: tint($light-gray, 50%);
+  border: $base-border;
+  border-radius: $base-border-radius;
+  margin: ($base-spacing * 2) auto $base-spacing;
+  max-width: 30rem;
+  padding: $base-spacing;
+}
+
+// this fixes the awful yellow background that Chrome automatically gives to every login box
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill:focus {
+}
+
+x{
+    border: 1px solid $base-border;
+  -webkit-text-fill-color: $base-font-color;
+  -webkit-box-shadow: 0 0 0 1000px $form-box-shadow-focus inset !important;
+  // -webkit-box-shadow: $form-box-shadow-focus;
+  transition: background-color 5000s ease-in-out 0s;
+}

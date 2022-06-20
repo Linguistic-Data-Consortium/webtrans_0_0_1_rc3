@@ -1,0 +1,11 @@
+.modal-fade-screen
+  .modal-inner
+    .modal-close
+    .modal-header Choose Project
+    = form_for :project, :remote => true, format: :json, :url => projects_respond_with_project_path do |f|
+      .modal-body
+        %div
+          %label.inline Name
+          = collection_select(:project, :id, @projects, :id, :name)
+      .modal-footer
+        = f.submit 'Save', :class => 'btn btn-primary close-btn'

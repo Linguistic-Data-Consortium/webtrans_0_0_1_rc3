@@ -1,0 +1,69 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<%= stylesheet_link_tag "chat" %>
+
+</head>
+<body>
+<div class="container">
+  <div class="row">
+    <div class="col left overflow">
+      <h1>Active Users</h1>
+      <div id="users">
+        <% $active_users.keys.each do |u| %>
+          <div id="<%= u %>">
+            <span class="dot float-left-child"></span>
+            <p class='float-left-child'7><%= u %></p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    <div class="col right">
+      <h1>Chat Room</h1>
+      <div class="chatbox" id="chatbox">
+        <ul id="chat">
+          <% @messages.each do |m| %>
+            <% if m.user == @current_user.name %>
+              <li class="me" id="message-li">
+                <div class="entete">
+                  <h2><b><%= m.user %></b>:</h2>
+                  <span class="status blue"></span>
+                </div>
+                <span id="timestamp">
+                  <%= m.created_at %>
+                </span>
+                <div class="message">
+                  <%= m.message %>
+                </div>
+              </li>
+            <% else %>
+              <li class="you" id="message-li">
+                <div class="entete">
+                  <span class="status green"></span>
+                  <h2><b><%= m.user %></b>:</h2>
+                </div>
+                <div class="message">
+                  <%= m.message %>
+                </div>
+                <span id="timestamp">
+                  <%= m.created_at %>
+                </span>
+              </li>
+            <% end %>
+          <% end %>
+        </ul>
+      </div>
+      <script type="text/javascript">
+        $('#chat').scrollTop($('#chat')[0].scrollHeight);
+      </script>
+      <form action="/chat" accept-charset="UTF-8" data-remote="true" method="post">
+        <input type="text" name="message" id="chat_message" required/>
+        <input type="submit" name="commit" value="Create" data-disable-with="Create" />
+      </form>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,144 @@
+window.ldc_keypress = ( ->
+    tool = null
+    ann = ldc_annotate
+    init: (namespace, t) ->
+        that = this
+        tool = t
+        if that.handlers[namespace]
+            $.each that.handlers[namespace], (x, y) ->
+                # console.log "handle"
+                selector = ".#{x}"
+                $('.Root').on 'keypress', selector, y
+    handlers:
+        SimpleNamedEntity:
+            current_display: (e) ->
+                ldc_keypress.handlers.RichEre.current_display e
+        FullEntity:
+            EntityListItem: (e) ->
+                ldc_keypress.handlers.RichEre.EntityListItem e
+            current_display: (e) ->
+                ldc_keypress.handlers.RichEre.current_display e
+            specialline: (e) ->
+                ldc_keypress.handlers.RichEre.specialline e
+        VieFullEntity:
+            EntityListItem: (e) ->
+                ldc_keypress.handlers.RichEre.EntityListItem e
+            current_display: (e) ->
+                ldc_keypress.handlers.RichEre.current_display e
+            specialline: (e) ->
+                ldc_keypress.handlers.RichEre.specialline e
+        RichEre:
+            EntityListItem: (e) ->
+                switch e.which
+                    when 110 # n
+                        $(this).next().focus()
+                    when 98 # b
+                        $(this).prev().focus()
+                    when 13 # enter
+                        c = $('.MentionListItem.current-mention').find('.EntityRef').attr('id')
+                        ldc_nodes.set_ref_to_node "##{c}", this
+                    when 101 # e
+                        ann.add_message $('.EntityList').data().meta.id, 'add', null
+                        ann.submit_form()
+
+            EventHopperListItem: (e) ->
+                switch e.which
+                    when 110 # n
+                        $(this).next().focus()
+                    when 98 # b
+                        $(this).prev().focus()
+                    when 13 # enter
+                        id = $('.EventMentionListItem.current-mention').data().meta.id
+                        n = $('.EventMentionListItem.current-mention').find('.EventHopperRef').data().meta.id
+                        type = $('.EventMentionListItem.current-mention').find('.EventType').data().value.value
+                        subtype = $('.EventMentionListItem.current-mention').find('.EventSubType').data().value.value
+                        mentions = $(this).data().refs
+                        if mentions.length > 0
+                            return if id in mentions
+                            sel = "#node-#{mentions[0]}"
+                            current_type = $(sel).find('.EventType').data().value.value
+                            current_subtype = $(sel).find('.EventSubType').data().value.value
+                            if type is current_type
+                                if type is 'contact' or type is 'transaction'
+                                    ldc_nodes.set_ref_to_node "#node-#{n}", this
+                                else
+                                    if subtype is current_subtype
+                                        ldc_nodes.set_ref_to_node "#node-#{n}", this
+                                    else
+                                        alert 'subtype mismatch'
+                            else
+                                alert 'type mismatch'
+                        else
+                            ldc_nodes.set_ref_to_node "#node-#{n}", this
+                        # console.log $(this)
+                        # console.log $('.EventMentionListItem.current-mention').data()
+                    when 101 # e
+                        ann.add_message $('.EventHopperList').data().meta.id, 'add', null
+                        ann.submit_form()
+
+            current_display: (e) ->
+                switch e.which
+                    when 110
+                        id = $(this).data().meta.id
+                        sel = $(this).data().meta.selection
+                        if sel.beg
+                            x = ann.get_offset(sel.beg) + 100
+                            y = x + 100
+                        else
+                            x = 0
+                            y = 100
+                        ldc_source.unselect_text id
+                        ldc_source.select_text_by_chars id, x, y
+                    when 98
+                        id = $(this).data().meta.id
+                        sel = $(this).data().meta.selection
+                        if sel.beg
+                            x = ann.get_offset(sel.beg) - 100
+                            y = x + 100
+                        else
+                            x = 0
+                            y = 100
+                        ldc_source.unselect_text id
+                        ldc_source.select_text_by_chars id, x, y
+            specialline: (e) ->
+                node_id = $(this).data().line_id.split('-')[1]
+                node = $("#node-#{node_id}").data()
+                console.error "node #{node_id} not defined for line #{$(this).data().line_id} in kit #{$('.Root').data().obj._id}" unless node
+                switch e.which
+                    when 13
+                        return if node.meta.readonly is true
+                        #enter key, making an annotation
+                        # ldc_source.unselect_text '2'
+                        sel = ldc_annotate.get_value_from_current_selection()
+                        data = $('.current_display').data()
+                        console.error "current_display not defined for node #{node_id} for line #{$(this).data().line_id} in kit #{$('.Root').data().obj._id}" unless data
+                        id = data.meta.id
+                        ldc_source.select_text_by_chars id, sel.beg, sel.end
+                        workflow = ldc_annotate.workflow
+                        ldc_source.set_current_display workflow.getActiveTextSource()
+                        # console.log sel
+                        data = $("#node-#{node_id}").siblings('.MentionHeadText').data()
+                        if data
+                            nid = data.meta.id
+                            ldc_annotate.annotate_current_text nid
+                            ldc_annotate.submit_form()
+        Cmn2ArabicTranscription:
+            Buckwalter: (e) ->
+                pressed = String.fromCharCode(e.keyCode)
+                map = $('.Root').data().mapping
+                allowed = [8,46,32]
+                for char, values of map
+                  if char of map and map[char]["arabic_letter"]
+                    allowed.push(char.charCodeAt(0))
+                if e.keyCode not in allowed
+                    return false
+            InputIpa: (e) ->
+                pressed = String.fromCharCode(e.keyCode)
+                map = $('.Root').data().mapping
+                allowed = [8,46,32]
+                for char, values of map
+                  if char of map and map[char]["ipa"]
+                    allowed.push(char.charCodeAt(0))
+                if e.keyCode not in allowed
+                    return false
+)()

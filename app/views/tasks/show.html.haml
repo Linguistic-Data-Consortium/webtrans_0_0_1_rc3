@@ -1,0 +1,179 @@
+-content_for :head do
+  = javascript_pack_tag 'tasks', defer: true
+
+.main      
+  %ul.nav-tabs#form_tabs
+    %li.tab-header-and-content
+      =link_to "Kit Summary", "javascript:void(0)", class: 'tab-link'
+      .tab-content
+        .flexright
+          =render :partial => 'reassign'
+        %table.display#counts
+          %thead
+            %tr
+              %th State
+              %th Count
+          %tbody
+            -@kit_state_count_map.each do |state, count|
+              %tr
+                %td=link_to state, "#{task_kits_path(@task)}?state=#{state}", :target => '_blank'
+                %td=link_to Kit.where(:task_id => @task.id, :state => state).count, "#{task_kits_path(@task)}?state=#{state}", :target => '_blank'
+        %hr
+        %div.bucket{ "data-bucket": @bucket, "data-bucket-size": @bucket_size }
+          couldn't find bucket
+    %li.tab-header-and-content
+      =link_to "Members", "javascript:void(0)", class: 'tab-link'
+      .tab-content
+        %table#task_members.display
+          %thead
+            %tr
+              %th Name
+              %th Status
+              %th Change state
+              %th Task admin
+              %th Remove from task
+              %th Activity
+          %tbody
+            - @task.task_users.each do |tuser|
+              %tr
+                %td
+                  = "#{tuser.user_name} - #{tuser.user_id}"
+                %td  
+                  = tuser.state
+                %td
+                  - @states.each_with_index do |state, index|
+                    = link_to state, "/workflows/#{@task.workflow_id}/set/#{tuser.id}/#{state}"
+                    -if index < @states.length-1
+                      |
+                %td
+                  = tuser.admin? ? "yes | " : "no | "
+                  -if project_admin?
+                    = link_to 'toggle', task_user_path(tuser), :method => 'put'
+                  -else
+                    n/a
+                %td
+                  -if (tuser.admin? && !project_admin?) || (tuser.project_admin? && tuser.user != current_user)
+                    n/a
+                  -else
+                    = link_to "remove", task_user_path(tuser), :method => 'delete', :data => {:confirm => "This will remove the user: #{tuser.user_name} from task: #{@task.name}, are you sure you want to do this?"}
+                %td
+                  = tuser.updated_at.to_s
+    %li.tab-header-and-content
+      =link_to "Other users in #{@project.name}", "javascript:void(0)", class: 'tab-link'
+      .tab-content
+        %table#other_users.display
+          %thead
+            %tr
+              %th Name
+              %th Add to task
+          %tbody
+            - @task.other_users_in_project.each do |user|
+              %tr
+                %td
+                  = "#{user.name} - #{user.id}"
+                %td
+                  = link_to "add " + user.name, "#{task_users_path}?user_id=#{user.id}&task_id=#{@task.id}", :method => 'post'                
+    %li.tab-header-and-content
+      =link_to "Preferences", "javascript:void(0)", class: 'tab-link'
+      .tab-content
+        - if task_admin?
+          %strong Preference Types:
+          =render :partial => 'preference_types/new', locals: {preference_type: @preference_type}
+          %table.display#preference_type_list
+            %thead
+              %tr
+                %th Type ID
+                %th Type Name
+                %th Values
+                %th Edit
+                %th Delete
+            %tbody
+              =render @preference_types
+        %strong Preference Settings:
+        %table.display#preference_setting_list
+          %thead
+            %tr
+              -if task_admin?
+                %th User
+              %th Name
+              %th Value
+              %th Edit
+            %tbody
+              =render @preference_settings
+.sidebar
+  %ul
+    %li
+      %strong Name:
+      = @task.name
+      = " - "
+      = link_to "Edit task", edit_project_task_path(@project, @task)
+    %li
+      %strong Project:
+      = link_to @project.name, @project
+    -if admin?
+      %li
+        %strong Workflow:
+        = link_to @task.workflow_name, workflow_path(@task.workflow)
+      %li
+        %strong KitType:
+        = !@task.kit_type.nil? ? link_to(@task.kit_type_composite_name, kit_type_path(@task.kit_type)) : "nil"    
+      %li
+        %strong Game Variant:
+        = @task.game_variant_id ? link_to(@task.game_variant.name, game_variant_path(@task.game_variant)) : "nil"
+    %li
+      %strong Fund:
+      = !@task.fund_id.nil? ? Fund.find(@task.fund_id).name : ""
+    %li
+      %strong Cref:
+      = !@task.cref_id.nil? ? Cref.find(@task.cref_id).name : ""
+    / %li
+    /   %strong Kit Creation:
+    /   =link_to 'kit creator', kit_creator_project_task_path(@project, @task)
+    / %li
+    /   %strong Kit Processing:
+    /   =link_to 'process kits', kit_processor_project_task_path(@project, @task)
+    / %li
+    /   %strong Token Counting Method:
+    /   = @task.token_counting_method.to_s
+    / %li
+    /   %strong Language:
+    /   -if @task.language_id
+    /     = @languages.where(:id => @task.language_id).first.ref_name
+    / %li
+    /   %strong Annotation Type:
+    /   - if @task.task_type_id
+    /     = @task_types.where(:id => @task.task_type_id).first.name
+    %li
+      %strong Deadline:
+      - if @task.deadline
+        = @task.deadline.to_date
+    / %li
+    /   %strong Meta:
+    /   = @task.meta.to_s
+    %li
+      %strong Status:
+      = @task.status
+
+    %li
+      %strong Floating Kits:
+      =@floating_kits.count
+      -if @floating_kits.count > 0
+        =link_to 'unassign', fix_floating_kits_kits_path(@task.id, 'unassigned'), :data => {:confirm => "Are you sure you want to unassign these #{@floating_kits.count} kits?"}
+        |
+        =link_to 'break', fix_floating_kits_kits_path(@task.id, 'broken'), :data => {:confirm => "Are you sure you want to break these #{@floating_kits.count} kits?"}
+    %li
+      -if @available_kits.class == Array
+        %strong Available Kits:
+        %span=@available_kits.count
+    / %li
+    /   %strong Email:
+    /   = link_to "All Members", new_task_email_path(:id => @task.id)       
+    / %li
+    /   = link_to "Reports", "/reports/reports/{@master_report.id}"
+    - if task_admin?
+      %li
+        %div
+          the following link will assign the above kit type to all existing kits in this task
+        = link_to "assign kit type", project_task_path(@project, @task) + "?force_kit_type=true"
+        
+#action_specific_js.init_show

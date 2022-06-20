@@ -1,0 +1,44 @@
+#new_collected_url {
+    margin-top: 1em;
+}
+#new_collected_url .field_with_errors label {
+    color: red;
+}
+#new_collected_url .chapter {
+    border: solid 1px black;
+    width: max-content;
+    padding: 1em;
+}
+#new_collected_url .chapter_buttons {
+    height: 2em;
+}
+#new_collected_url .chapter_buttons .chapter_button {
+    border: solid 1px black;
+    border-radius: 6px 6px 0px 0px;
+    cursor: pointer;
+    height: 2em;
+    border-bottom: solid 5px transparent;
+}
+#new_collected_url .chapter_buttons .chapter_button.active {
+    border-bottom-color: white;
+    background-color: white;
+}
+#new_collected_url .chapter_buttons .chapter_button.inactive {
+    background-color: lightgray;
+}
+#new_collected_url label {
+    display: inline-block;
+    font-size: 1.25em;
+    min-width: 12em;
+}
+#new_collected_url input[type="text"] {
+    min-width: 20em;
+}
+#new_collected_url select + div, input + div {
+    margin-left: 1em;
+}
+#new_collected_url textarea {
+    display: block;
+    min-width: 40em;
+    min-height: 7em;
+}

@@ -1,0 +1,7 @@
+%tr
+  %td= link_to game_variant.id, game_variant
+  %td= link_to game_variant.name, game_variant
+  %td= link_to game_variant.game.name, game_path(game_variant.game)
+  - if admin?
+    %td= link_to "edit", edit_game_variant_path(game_variant)
+    %td= link_to "delete", game_variant, :method => :delete, :data => {:confirm => "This will delete the game_variant: #{game_variant.name}, are you sure you want to do this?"}, :title => "Delete #{game_variant.name}", :id => "delete_#{game_variant.id}"

@@ -1,0 +1,37 @@
+-content_for :head do
+  = javascript_include_tag "annotate"
+  = javascript_include_tag "nodes"
+  -# = javascript_include_tag "refresh_node"
+  -# = javascript_include_tag "logic"
+  -# = javascript_include_tag "click"
+  -# = javascript_include_tag "source"
+  = javascript_include_tag "services"
+  -# = javascript_include_tag "waveform"
+  -# = javascript_include_tag "audio_recording"
+  -# = javascript_include_tag "stop_watch.js"
+  -# = javascript_include_tag 'kbsearch'
+  = #javascript_include_tag "workflows/#{@kit.kit_type.javascript}.js"
+  -# = javascript_include_tag "workflows/empty.js"
+  -# = javascript_include_tag 'jquery.fileupload'
+  -# = stylesheet_link_tag 'jquery.fileupload-ui'
+  = vite_javascript_tag 'work'
+  - pack_name = @kit.tree.class_def.name.underscore
+  -if javascript_exists? "widgets/#{pack_name}"
+    = javascript_include_tag "widgets/#{pack_name}"
+  -if javascript_exists? pack_name
+    = vite_javascript_tag pack_name
+  -# - if @kit.meta['css']
+  -#   = stylesheet_link_tag "/styles/#{@kit.uid}"
+  -# - else
+  -#   - if @kit.tree and @kit.tree.class_def_id
+  -#     = stylesheet_link_tag "/styles/#{@kit.tree.class_def_id}"
+  %script{:src => "//cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js"}
+-content_for :action_specific_js do
+  - hash = { admin: admin?, project_manager: project_manager?, project_admin: project_admin?, task_admin: task_admin?, constraints: @kit_type.constraints }
+  != "window.ldc_work_work = #{hash.to_json};"
+  - hash = @kit.to_hash(false,false)
+  - hash['source']['url'] = url_for @source.file if @source and @source.file
+  / # - unprotect_annotations hash['tree'] if @kit.task_id.in? protected_task_ids
+  -if @manifest
+    != "window.ldc_work_manifest = #{@manifest.to_json.force_encoding('utf-8')};"
+  != "window.ldc_annotate_initt = #{hash.to_json};"

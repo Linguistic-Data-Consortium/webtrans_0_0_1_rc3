@@ -1,0 +1,6 @@
+%tr
+  %td= link_to group.name, group
+  %td=group.users.count
+  -if admin?
+    %td= link_to "delete", group, :method => :delete, :data => {:confirm => "This will delete the group: #{group.name}, are you sure you want to do this?"}, :title => "Delete #{group.name}"
+

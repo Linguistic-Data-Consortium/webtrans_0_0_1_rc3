@@ -1,0 +1,44 @@
+.modal-fade-screen
+  .modal-inner
+    .modal-close
+    .modal-header Edit Widget
+    .modal-body
+      =form_for @node_class, :url => project_builder_create_widget_path, :remote => true, format: :json  do |f|
+        %div
+          %label Widget Name
+          %input{:type => 'text', :id => "name-#{@node_class.id}", :name => "node_class[name]", :value => @node_class['name'], :original => @node_class['name']}
+          %label Label
+          %input{:type => 'text', :id => "childlabel-#{@node_class.id}", :name => "node_class[value][label]", :value => @node_class['value']['label'], :original => @node_class['value']['label']}
+          -if @type == 'Display Text'
+            %label Input Source (field in uploaded data set for display widgets)
+            %input{:type => 'text', :id => "childinputsource-#{@node_class.id}", :name => "node_class[value][input_source]", :value => @node_class['value']['input_source'], :original => @node_class['value']['input_source']}
+            %label Text (if static and not from data)
+            %input{:type => 'text', :id => "childtext-#{@node_class.id}", :name => "node_class[value][text]", :value => @node_class['value']['text'], :original => @node_class['value']['text']}
+          -if @type == 'Entry Field'
+            %label Annotation Name (will be saved as a AnnotationNameItem)
+            %input{:type => 'text', :id => "childannname-#{@node_class.id}", :name => "node_class[value][annotation_name]", :value => @node_class['value']['annotation_name'], :original => @node_class['value']['annotation_name']}
+          -if @type == 'Dropdown Selector'
+            %label Annotation Name (will be saved as a AnnotationNameItem)
+            %input{:type => 'text', :id => "childannname-#{@node_class.id}", :name => "node_class[value][annotation_name]", :value => @node_class['value']['annotation_name'], :original => @node_class['value']['annotation_name']}
+            %label Options (space separated)
+            %input{:type => 'text', :id => "childoptions-#{@node_class.id}", :name => "node_class[value][options]", :value => @node_class['value']['options'], :original => @node_class['value']['options']}
+          -if @type == 'Button'
+            %label Action
+            %select{ :id => "childaction-#{@node_class.id}", :name => "node_class[value][action]", :value => @node_class['value']['action'], :original => @node_class['value']['action']}
+              %option{ value: 'next' } Next (saves kit and marks as done)
+              %option{ value: 'broken' } Break kit
+          -if @type == 'Audio'
+            %label Annotation Name (will be saved as a AnnotationNameItem)
+            %input{:type => 'text', :id => "childannname-#{@node_class.id}", :name => "node_class[value][annotation_name]", :value => @node_class['value']['annotation_name'], :original => @node_class['value']['annotation_name']}
+            %label Input Source (field in uploaded data set for display widgets)
+            %input{:type => 'text', :id => "childinputsource-#{@node_class.id}", :name => "node_class[value][input_source]", :value => @node_class['value']['input_source'], :original => @node_class['value']['input_source']}
+            %div
+              %label Waveform or Slider?
+              %label.inline Waveform
+              %input{:type => 'radio', :id => "childinputsource-#{@node_class.id}", :name => "node_class[value][waveform]", :value => 'waveform', :original => @node_class['value']['waveform']}
+              %label.inline Slider
+              %input{:type => 'radio', :id => "childinputsource-#{@node_class.id}", :name => "node_class[value][waveform]", :value => 'slider', :original => @node_class['value']['waveform']}
+          %input{ :type => 'hidden', :id => "class_def_id", :name => "class_def_id", :value => @class_def.id }
+          %input{ :type => 'hidden', :id => "widget_type", :name => "widget_type", :value => @type}
+          = f.submit 'Save', :class => 'btn btn-primary close-btn'
+          = f.submit 'Delete', :class => 'btn close-btn'

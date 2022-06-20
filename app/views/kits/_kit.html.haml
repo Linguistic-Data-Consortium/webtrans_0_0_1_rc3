@@ -1,0 +1,5 @@
+%li
+  - if kit['kit_type']
+    = link_to "#{kit['id']}, #{kit['kit_type'].class.to_s.sub(/.+::/, '')}, #{kit['kit_type'].name ? kit['kit_type'].name : 'no name'}", '/'
+  - else
+    = link_to "#{kit['id']} no kit type found", '/'

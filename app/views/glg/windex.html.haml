@@ -1,0 +1,18 @@
+-content_for :head do
+  = javascript_include_tag "nodes"
+  = javascript_include_tag 'glgc'
+
+.ntl-home
+  %h1.GLGTitleLabel
+    Webtrans
+
+  .game-welcome
+    .welcome-left
+      .welcome-text
+        Welcome!
+      %div
+        = button_to "Start Transcribing", "/webtrans/play"
+
+  - text = {}
+  -content_for :action_specific_js do
+    != "ldc_glgc.init(#{text.to_json});"

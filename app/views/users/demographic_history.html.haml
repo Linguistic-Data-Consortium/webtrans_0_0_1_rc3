@@ -1,0 +1,41 @@
+%h1 Demographic profile history
+
+%table.display
+  %thead
+    %tr
+      %th Gender
+      %th Birth year
+      %th Years of education
+      %th Highest degree earned
+      %th Degree year
+      %th Education contiguous
+      %th Ethnicity
+      %th Occupation
+      %th Height (cm)
+      %th Weight (kg)
+      %th Smoker
+      %th Date entered
+  %tbody
+    - @demog_profiles.each do |profile|
+      %tr
+        %td= profile.gender
+        %td= profile.year_of_birth
+        %td= profile.edu_years
+        %td= profile.edu_degree
+        %td= profile.edu_degree_year
+        %td= profile.edu_contiguous
+        %td= profile.ethnicity
+        %td= profile.occupation
+        %td= profile.height
+        %td= profile.weight
+        %td= profile.smoker
+        %td= profile.created_at
+
+%br/
+%br/
+= link_to "Return to #{@user.name}", user_path(@user)
+%br/
+= link_to "Edit #{@user.name}", edit_user_path(@user)
+
+%script     
+  $('.display').dataTable({sPaginationType: "full_numbers", bJQueryUI: true});     

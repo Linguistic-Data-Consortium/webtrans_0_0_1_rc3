@@ -1,0 +1,44 @@
+<div class="page3">
+  <h2>Your Enrollment Information</h2>
+  <div>
+      <p>
+        Please provide some information about yourself.
+      </p>
+    <div>
+      <div>
+        <label>Places Lived</label>
+        <textarea id="city" name="city" cols=50 rows=3></textarea>
+      </div>
+    </div>
+      <label>Year of Birth</label>
+      <input type="text" name="year_of_birth"/>
+    </div>
+    <div>
+      <label>Sex</label>
+      <input type="radio" name="gender" value="male"/>
+      <span>Male</span>
+      <input type="radio" name="gender" value="female"/>
+      <span>Female</span>
+      <input type="radio" name="gender" value="other"/>
+      <span>Other</span>
+    </div>
+    <div>
+      <label>Education</label>
+      <select name="edu" id="edu">
+        <option value="">--Select education--</option>
+        <% edu_degree_options.each do |x| %>
+        <option value="<%=x[1]%>"><%=x[0]%></option>
+        <% end %>
+      </select>
+    </div>
+    <div>
+      <label>Primary Language</label>
+      <select name="languages_known" id="languages_known">
+      	<option value="">--Select language--</option>
+      	<option value="English">English</option>
+      	<option value="other">Other (specify)</option>
+      </select>
+      <input id="languages_known_other" class="initially_hidden" type="text" name="languages_known_other"/>
+    </div>
+  <button class="confirm_demographic_profile">Submit</button>
+</div>

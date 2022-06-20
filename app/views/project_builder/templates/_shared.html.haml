@@ -1,0 +1,154 @@
+%div
+  Exercise Specific Text (displays within task with each working kit)
+  = text_area_tag("class_def[exercise_text]")
+
+%div
+  Media Type (required)
+  %label.inline
+    = radio_button_tag("class_def[media_type]", "text", false, required: true)
+    Text (separate files)
+  %label.inline
+    = radio_button_tag("class_def[media_type]", "audio", false, required: true)
+    Audio
+  %label.inline
+    = radio_button_tag("class_def[media_type]", "image", false, required: true)
+    Image
+  %label.inline
+    = radio_button_tag("class_def[media_type]", "video", false, required: true)
+    Video
+  %label.inline
+    = radio_button_tag("class_def[media_type]", "manifest", false, required: true)
+    Manifest Text (text in column)
+
+%div
+  Media Content Column (column header in input)
+  = select_tag("class_def[media_content]", options_for_select(@manifest_columns), include_blank: true, required: true)
+
+%div
+  Include language selection?
+  %label.inline
+    = radio_button_tag("class_def[language_selector]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[language_selector]", "no")
+    No
+%div#limit_lang_div{ style: "display: none;"}
+  Limit language selection?
+  %label.inline
+    = radio_button_tag("class_def[limit_languages]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[limit_languages]", "no")
+    No
+%div#langs_div{ style: "display: none;"}
+  Languages to display
+  = text_field_tag("class_def[languages]")
+
+%div
+  Prompt ID Field (from manifest, used to identify item and results in output) (required)
+  = select_tag("class_def[prompt_id_field]", options_for_select(@manifest_columns), include_blank: true, required: true)
+
+%div
+  Include Primary Item Specific Text?
+  %label.inline
+    = radio_button_tag("class_def[input_primary]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[input_primary]", "no")
+    No
+  #primary{ style: "display: none;"}
+    %div
+      Primary Item Specific Text (column header in input) (required)
+      = select_tag("class_def[input_source_primary]", options_for_select(@manifest_columns), include_blank: true)
+    %div
+      Primary Item Specific Text Label
+      = text_field_tag("class_def[input_source_primary_label]")
+  %div
+    Include Secondary Item Specific Text?
+    %label.inline
+      = radio_button_tag("class_def[input_secondary]", "yes")
+      Yes
+    %label.inline
+      = radio_button_tag("class_def[input_secondary]", "no")
+      No
+    #secondary{ style: "display: none;"}
+      %div
+        Secondary Item Specific Text (column header in input) (required)
+        = select_tag("class_def[input_source_secondary]", options_for_select(@manifest_columns), include_blank: true)
+      %div
+        Secondary Item Specific Text Label
+        = text_field_tag("class_def[input_source_secondary_label]")
+
+%div
+  Include Response Audio (record response to stimulus)?
+  %label.inline
+    = radio_button_tag("class_def[audio_response]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[audio_response]", "no")
+    No
+%div#level_test{ style: "display: none;"}
+  Include Level Test?
+  %label.inline
+    = radio_button_tag("class_def[level_test]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[level_test]", "no")
+    No
+%div#level_meter{ style: "display: none;"}
+  Include Level Meter?
+  %label.inline
+    = radio_button_tag("class_def[level_meter]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[level_meter]", "no")
+    No
+%div
+  Include Response Text (translation, transcription, etc)?
+  %label.inline
+    = radio_button_tag("class_def[text_annotation]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[text_annotation]", "no")
+    No
+  %div#text_annotation_fields{ style: "display: none;"}
+    %div
+      Annotation Field Name (saved in db with this name) (required)
+      = text_field_tag("class_def[annotation_name]")
+    %div
+      Annotation Field Label
+      = text_field_tag("class_def[annotation_label]")
+
+%div
+  Judgment Buttons (one per line). Judgment buttons move to next annotation and are stored in a judgment field.
+  If no buttons are specified, a "Submit" button will be added.
+  = text_area_tag("class_def[buttons]")
+
+%div
+  Multiple Choice? The above will not display as buttons, but instead as checkboxes. There will be a Submit button automatically added.
+  %label.inline
+    = radio_button_tag("class_def[multiple_choice]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[multiple_choice]", "no")
+    No
+
+%div
+  Allow skip?
+  %label.inline
+    = radio_button_tag("class_def[skip]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[skip]", "no")
+    No
+
+%div
+  Allow "report bad item"? 
+  %label.inline
+    = radio_button_tag("class_def[report]", "yes")
+    Yes
+  %label.inline
+    = radio_button_tag("class_def[report]", "no")
+    No
+%div
+  %input{ :type => 'hidden', :id => "task_id", :name => "task_id", :value => @task.id}

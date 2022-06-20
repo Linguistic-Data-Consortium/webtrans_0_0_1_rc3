@@ -1,0 +1,17 @@
+window.ua_partners = ( ->
+    add_partner: ->
+        fields = '<label class="inline">Name</label>
+        <input type="text" name="project[partners_attributes][replace_index][name]" id="project_partners_attributes_replace_index_name" />
+        <label class="inline">Url</label>
+        <input type="text" name="project[partners_attributes][replace_index][url]" id="project_partners_attributes_replace_index_title" />
+        <label class="inline">Partner Badge (image)</label>
+        <input data-direct-upload-url="/rails/active_storage/direct_uploads" type="file" name="project[partners_attributes][replace_index][image]" id="project_partners_attributes_replace_index_image" />'
+        date = new Date().getTime()
+        fields = fields.replace(/replace_index/g, date)
+        $('.add-partner').before(fields)
+    init: ->
+        $('body').on 'click', '.add-partner', (e) ->
+            e.preventDefault()
+            ua_partners.add_partner()
+
+)()

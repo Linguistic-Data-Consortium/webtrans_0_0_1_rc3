@@ -1,0 +1,16 @@
+#add_group_modal.modal
+  %label
+    .modal-trigger
+      %button Create Group
+  .modal-fade-screen
+    .modal-inner
+      .modal-close
+      .modal-body
+        %h1 Add Group
+        = form_for(@group) do |f|
+          .modal-body
+            %label Name
+            = f.text_field :name
+          .modal-footer
+            = f.submit 'Save', :class => 'btn btn-primary'
+

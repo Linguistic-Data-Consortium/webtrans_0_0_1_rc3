@@ -1,0 +1,16 @@
+-content_for :head do
+  =javascript_include_tag 'kits'
+
+%strong
+  Kit
+  = @kit.id
+  = @kit.uid
+  - if @task_user
+    = link_to 'work', "/workflows/workflows/#{@kit.task.workflow_id}/work/#{@task_user.id}?kit_id=#{@kit.id}"
+  - else
+    = 'no task user'
+.row-fluid
+  Kit Type
+  = form_for @kit, :url => update_kits_path(@kit), :html => {:autocomplete => 'off'} do |f|
+    = collection_select(:kit, :kit_type_id, @kit_types, :id, :composite_name, :prompt => true)
+    = f.submit "Save", :class => 'btn margin-bottom-10'

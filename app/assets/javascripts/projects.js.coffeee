@@ -1,0 +1,14 @@
+window.ldc_projects = ( ->
+    #this function is called when loading the index view
+    init_index: ->
+    #     $('.display').dataTable
+    #         paging: false
+    #         scrollY: '400px'
+    #         scrollCollapse: true
+    #this function is called when loading the show view
+    init_show: ->
+        $('.display').dataTable
+            paging: false
+            scrollY: '400px'
+            scrollCollapse: true
+)()

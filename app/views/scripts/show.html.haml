@@ -1,0 +1,7 @@
+-content_for :head do
+  = javascript_include_tag "source"
+  = vite_javascript_tag 'run'
+-content_for :action_specific_js do
+  - hash = { admin: admin?, portal_manager: portal_manager?, project_manager: project_manager? }
+  - hash[:error] = @error
+  != "window.ldc_run_run = #{hash.to_json}"

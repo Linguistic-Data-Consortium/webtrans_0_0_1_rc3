@@ -1,0 +1,13 @@
+-content_for :head do
+  = vite_javascript_tag 'users'
+  -# = javascript_pack_tag 'hello_react'
+  -# = javascript_include_tag "nodes"
+  -# = javascript_include_tag 'collections/collection'
+
+  / - if @enrollments.select { |x| x.collection_id == 9 }.count == 1
+  /   .enrollments
+  /     = link_to "Click here to return to Call My Net 2", '/cmn2'
+
+#permissions{ 'data-admin' => admin?.to_s, 'data-portal_manager' => portal_manager?.to_s, 'data-project_manager' => project_manager?.to_s }
+
+#action_specific_js.users_init_show

@@ -1,0 +1,23 @@
+-content_for :head do
+  =javascript_include_tag 'user_defined_objects'
+
+.row-fluid
+  %strong.span2 All Objects
+  %span.span2.offset8
+    =render :partial => 'new'
+
+%table.display 
+  %thead
+    %tr
+      %th name
+      %th Created At
+      %th
+  %tbody
+    - @objects.each do |object|
+      %tr
+        %td=link_to object.name, user_defined_object_path(object)
+        %td=link_to object.created_at, user_defined_object_path(object)
+        %td=link_to 'delete', user_defined_object_path(object), :method => :delete, :data => {:confirm => "This will delete the object: #{object.name}, are you sure you want to do this?"}, :title => "Delete #{object.name}"
+
+-content_for :action_specific_js do 
+  ldc_user_defined_objects.init_index();

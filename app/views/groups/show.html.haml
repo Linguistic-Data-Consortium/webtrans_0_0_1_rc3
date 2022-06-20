@@ -1,0 +1,56 @@
+.info
+  %ul.flex
+    %li
+      %strong Name:
+      %span= @group.name
+      %button.expand-trigger.expand-hidden Edit
+      .expand-content
+        = form_for @group, :html => {:autocomplete => 'off'} do |f|
+          = f.text_field :name
+          = f.submit "Save", :id => "submit_name", :class => 'btn margin-bottom-10'
+    %li
+      %strong Created:
+      = @group.created_at.to_date
+    %li
+      %strong Last Updated:
+      = @group.updated_at.to_date
+
+.main
+  %ul.nav-tabs#form_tabs
+    %li.tab-header-and-content
+      =link_to "Members", "javascript:void(0)", class: 'tab-link'
+      .tab-content
+        %table#group_members.display
+          %thead
+            %tr
+              %th
+                %strong Name
+              %th
+                %strong Remove from group
+          %tbody
+            - @group.group_users.each do |guser|
+              %tr{ :id => "user_#{guser.id}" }
+                %td
+                  = guser.user_name
+                %td
+                  =link_to "remove", group_user_path(guser), :method => 'delete', :data => {:confirm => "This will remove the user: #{guser.user_name} from the group: #{@group.name}, are you sure you want to do this?"}
+    %li.tab-header-and-content
+      =link_to "Other users", "javascript:void(0)", class: 'tab-link'
+      .tab-content
+        %table#other_users.display
+          %thead
+            %tr
+              %th
+                %strong Name
+              %th
+                %strong Add to group
+          %tbody
+            - @group.users_not_in_group.each do |user|
+              %tr{ :id => "user_#{user.id}" }
+                %td
+                  = user.name
+                %td
+                  = link_to "add", "#{group_users_path}?user_id=#{user.id}&group_id=#{@group.id}", :method => 'post'
+
+%ul.pager
+  %li= link_to "Return to groups", groups_path

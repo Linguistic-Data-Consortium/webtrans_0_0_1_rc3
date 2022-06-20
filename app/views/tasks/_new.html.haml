@@ -1,0 +1,78 @@
+/ .modal-header
+/   %button.close{:type => 'button', :data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} &times;
+/   %h3#modalHeader= "New task for #{@project.name}"
+%h1#modalHeader= "New task for #{@project.name}"
+= form_for [@project, @task] do |f|
+  .modal-body
+    %div
+      %label Name
+      = f.text_field :name
+    %div
+      %label Workflow
+      = collection_select(:task, :workflow_id, @workflows, :id, :name)
+    %div
+      %label Kit Type
+      = collection_select(:task, :kit_type_id, @kit_types, :id, :composite_name)
+    %div
+      %label.inline="Data Set"
+      =collection_select(:task, :data_set_id, @data_sets, :id, :name, {:include_blank => "Select data set"})
+    %div
+      <label for="game_variants_autocomplete">Game Variant</label>
+      <input class="game_variants_autocomplete" id="task_game_variant" name="task[game_variant]">
+    %div.expander
+      = link_to "Options:", 'javascript:void(0)', class: 'expander-trigger expander-hidden'
+      .expander-content
+        -if current_user.name == "grale"
+          %div
+            %label.inline="Fund"
+            =collection_select(:task, :fund_id, @funds, :id, :name, {:include_blank => "Select the fund"})
+          %div
+            %label.inline="Cref"
+            =collection_select(:task, :cref_id, @crefs, :id, :name, {:include_blank => "Select the cref"})
+        / %div
+        /   %label.inline="Task Type"
+        /   =collection_select(:task, :task_type_id, @task_types, :id, :name, {:include_blank => "Select the task type"})
+        / %div
+        /   %label.inline="Language"
+        /   =collection_select(:task, :language_id, @languages, :id, :ref_name, {:include_blank => "Select the language"})
+        %div
+          %label.inline="Deadline"
+          = date_field(:task, :deadline)
+        %div
+          = "Token Counting Method"
+        .well
+          %div
+            %label.inline Words /\p{Word}+/
+            <input type="radio" name="task[counttype]" id="task_counttype" value="words">
+          %div
+            %label.inline Characters /\p{Word}/
+            <input type="radio" name="task[counttype]" id="task_counttype" value="tokens">
+          %div
+            %label.inline Whitespace /\P{White}+/
+            <input type="radio" name="task[counttype]" id="task_counttype" value="whitespace">
+          %div
+            %label.inline="Eliminate XML in markup"
+            <input type="checkbox" name="task[elimxml]" id="task_elimxml" value="1">
+          %div
+            %label.inline="Target <text> in markup"
+            <input type="checkbox" name="task[targettext]" id="task_targettext" value="1">
+          %div
+            %label.inline= "Eliminate <quote> tags in markup"
+            <input type="checkbox" name="task[elimquotes]" id="task_elimquotes" value="1">
+    %div
+      = "Status"
+    .well
+      %div
+        %label.inline Active
+        <input type="radio" name="task[status]" id="task_status" value="active">
+      %div
+        %label.inline Inactive
+        <input type="radio" name="task[status]" id="task_status" value="inactive">
+    %div
+      %strong Task description for help page (optional)
+    %div
+      = f.text_area :help, :rows => 7, :style => 'width: 95%;'
+    
+  .modal-footer  
+    %button.btn{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} Close
+    = f.submit 'Save', :class => 'btn btn-primary'

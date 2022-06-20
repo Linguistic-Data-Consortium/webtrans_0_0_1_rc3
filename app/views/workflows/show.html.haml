@@ -1,0 +1,39 @@
+%table.full-width
+  %tr
+    %td.main
+      %h1 Workflow
+      .expander
+        = link_to "Name: #{@workflow.name}", 'javascript:void(0)', class: 'expander-trigger expander-hidden'
+        .expander-content
+          = form_for @workflow, :as => :workflow, :url => workflow_path(@workflow), :html => {:autocomplete => :off} do |f|
+            = f.text_field :name
+            = f.submit "Save", :id => "submit_name", :class => 'btn margin-bottom-10'
+      .expander
+        = link_to "Type: #{@workflow.type}", 'javascript:void(0)', class: 'expander-trigger expander-hidden'
+        .expander-content
+          = form_for @workflow, :as => :workflow, :url => workflow_path(@workflow), :html => {:autocomplete => :off} do |f|
+            = select_tag "workflow[type]", options_for_select(@workflow.types, @workflow.type)
+            = f.submit "Save", :id => "submit_name", :class => 'btn margin-bottom-10'
+      .expander
+        = link_to "User States: #{@workflow.user_states}", 'javascript:void(0)', class: 'expander-trigger expander-hidden'
+        .expander-content
+          = form_for @workflow, :as => :workflow, :url => workflow_path(@workflow), :html => {:autocomplete => :off} do |f|
+            = f.text_field :user_states
+            = f.submit "Save", :id => "submit_name", :class => 'btn margin-bottom-10'
+      .expander
+        = link_to "Description: #{@workflow.description}", 'javascript:void(0)', class: 'expander-trigger expander-hidden'
+        .expander-content
+          = form_for @workflow, :as => :workflow, :url => workflow_path(@workflow), :html => {:autocomplete => :off} do |f|
+            = f.text_area:description
+            %div= f.submit "Save", :id => "submit_name", :class => 'btn margin-bottom-10'
+      
+      %ul.pager
+        %li= link_to "Return to workflows", workflows_path
+    
+    %td.sidebar.round
+      %div
+        %strong Created: 
+        = @workflow.created_at.to_date
+      %div
+        %strong Last Updated: 
+        = @workflow.updated_at.to_date

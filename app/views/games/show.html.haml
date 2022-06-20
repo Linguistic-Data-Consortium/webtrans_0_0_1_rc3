@@ -1,0 +1,8 @@
+.full
+  .flexleft
+    %h1 Edit Game
+    = form_for @game, :html => {:autocomplete => 'off'} do |f|
+      %label Name
+      = f.text_field :name
+      = f.submit "Save", :id => "submit_name", :class => 'btn margin-bottom-10'
+      

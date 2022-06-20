@@ -1,0 +1,116 @@
+%div
+  %div
+    %div
+      %strong Name:
+      = @kit_type.name
+      %button.expand-trigger.expand-hidden Edit
+      .expand-content
+        = form_for @kit_type, :as => :kit_type, :url => update_name_kit_type_path(@kit_type), :html => {:autocomplete => 'off'} do |f|
+          = f.text_field :name
+          = f.submit "Save", :id => "submit_name", :class => 'btn margin-bottom-10', data: { confirm: "Are you sure? Will affect #{@task_ids_names.size} task(s)." } if @task_ids_names.size > 1
+          = f.submit "Save", :id => "submit_name", :class => 'btn margin-bottom-10' if @task_ids_names.size <= 1
+    %div
+      %strong Type:
+      / # = @kit_type.type
+      %button.expand-trigger.expand-hidden Edit
+      .expand-content
+        = form_for @kit_type, :as => :kit_type, :url => update_type_kit_type_path(@kit_type), :html => {:autocomplete => 'off'} do |f|
+          / # = select_tag "kit_type[type]", options_for_select(@kit_type.types, @kit_type.type)
+          = f.submit "Save", :id => "submit_name", :class => 'btn margin-bottom-10', data: { confirm: "Are you sure? Will affect #{@task_ids_names.size} task(s)." } if @task_ids_names.size > 1
+          = f.submit "Save", :id => "submit_name", :class => 'btn margin-bottom-10' if @task_ids_names.size <= 1
+      .row-fluid
+        %strong Node Class:
+        = @kit_type.node_class_id
+      
+      .row-fluid
+        %strong Config:
+        = @kit_type.config_id
+      
+      .row-fluid
+        %strong Tasks using this kit type:
+        %button.expand-trigger.expand-hidden View task list
+        .expand-content
+          -@task_ids_names.each do |t|
+            %div
+              =t
+      %div
+        %strong Meta:
+        / .inline= @kit_type.meta
+        %button.expand-trigger.expand-hidden Edit
+        .expand-content
+          = form_for @kit_type, :as => :kit_type, :url => update_meta_kit_type_path(@kit_type), :html => {:autocomplete => 'off'} do |f|
+            %strong Meta
+            .field{:style => "margin-left: 15px;"}
+              .row-fluid
+                %strong Root
+              / # = select_tag "kit_type[root]", options_for_select(@roots2, @kit_type.meta['root']), :prompt => "Select one"
+            .field{:style => "margin-left: 15px;"}
+              .row-fluid
+                %strong JavaScript File
+              / # = select_tag "kit_type[js]", options_for_select(@jsfiles2, @kit_type.meta['js']), :prompt => "Select one"
+            .field{:style => "margin-left: 15px;"}
+              .row-fluid
+                %strong Lists to start as empty
+              / # = select_tag "kit_type[empty_list]", options_for_select(@all_lists2, @kit_type.meta['empty_list']), :multiple => true, :size => @all_lists2.length
+            .field{:style => "margin-left: 15px;"}
+              .row-fluid
+                %strong Coref Groups (comma separated list)
+              / # = text_field_tag "kit_type[coref_groups]", @kit_type.meta['coref_groups'] ? @kit_type.meta['coref_groups'].join(',') : ''
+            .field{:style => "margin-left: 15px;"}
+              .row-fluid
+                %strong View
+              / # = text_field_tag "kit_type[view]", @kit_type.meta['view']
+              
+            .field{:style => "margin-left: 15px;"}
+              .row-fluid
+                %strong Template
+              / # = select_tag "kit_type[template]", options_for_select(@templates2, @kit_type.meta['template']), :prompt => "Select one"
+            .field{:style => "margin-left: 15px;"}
+              .row-fluid
+                %strong Source (JSON)
+              / # = text_field_tag "kit_type[source]", @kit_type.meta['source']
+            = f.submit "Save", :id => "submit_meta", :class => 'btn', data: { confirm: "Are you sure? Will affect #{@task_ids_names.size} task(s)." }  if @task_ids_names.size > 1 
+            = f.submit "Save", :id => "submit_meta", :class => 'btn' if @task_ids_names.size <= 1
+      %div
+        %strong Constraints toggles
+        .inline= @kit_type.constraints.keys()
+        %button.expand-trigger.expand-hidden Edit
+        .expand-content
+          = form_for @kit_type, :as => :kit_type, :url => update_constraints_kit_type_path(@kit_type), :html => {:autocomplete => 'off'} do |f|
+            .field{:style => "margin-left: 15px;"}
+              .row-fluid
+                %strong Constraints (separate with spaces)
+                %div
+                  Currently WebAnn has the following contraints:
+                %div
+                  rtl (right to left) : type in this contraints for languages that read from right to left
+                %div
+                  restricted_event_types: this is relevant to Rich ERE which restricts event types and subtypes to a limited inventory for 2016's eval data annotation
+                %div
+                  specific_group: this is relevant to Rich ERE which restricts entity specificity value to a new sets of drop down menu
+                %div
+                  comment: use this contraint if you want to allow a pop up window for each kit for annotators to leave comments 
+                %div
+                  ban-quotes: use this contraint if you want to gray out content within <quote> </quote> from an XML source document, such as DF in ERE
+                %div
+                  orgper: for EDL tools, limits to org and per entities and search
+                %div
+                  gpeloc: for EDL tools, limits to gpe and loc entities and search
+                %div
+                  If you want to add multiple constraints, type in each constraint, with white space separate each
+                %div
+                  List constraints to toggle separated by spaces
+                = text_field_tag "kit_type[constraints]", @kit_type.constraints.keys()
+                = f.submit "Save", :id => "submit_meta", :class => 'btn', data: { confirm: "Are you sure? Will affect #{@task_ids_names.size} task(s)." } if @task_ids_names.size > 1
+                = f.submit "Save", :id => "submit_meta", :class => 'btn' if @task_ids_names.size <= 1
+    %td.sidebar.round
+      .row-fluid
+        %strong Created: 
+        = @kit_type.created_at.to_date
+      .row-fluid
+        %strong Last Updated: 
+        = @kit_type.updated_at.to_date
+      
+%ul.pager
+  %li=link_to "Return to kit types", kit_types_path
+      

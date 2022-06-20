@@ -1,0 +1,22 @@
+.project {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    max-width: 80vw;
+    margin: auto;
+}
+
+.name {
+    margin: 0em 1em;
+
+    .task {
+        width: 80vw;
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0.5em 2em;
+    }
+    .task::before {
+        content: ">";
+        position: absolute;
+    }
+}

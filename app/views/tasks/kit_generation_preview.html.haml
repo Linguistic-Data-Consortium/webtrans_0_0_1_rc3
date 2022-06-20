@@ -1,0 +1,38 @@
+-content_for :head do
+  =javascript_include_tag 'tasks'
+
+.row-fluid
+  %strong Task:
+  = link_to @task.name, project_task_path(@task.project_id, @task)
+  .pull-right
+    %strong Select:
+    =link_to 'all', "#", :id => 'select_all'
+    |
+    =link_to 'none', "#", :id => 'select_none'
+
+%table.full-width
+  %tr
+    %td.main
+      %h1 Select kits to be generated
+      = form_tag( generate_kits_project_task_path(@task.project, @task), :method => 'post', :id => 'kit_creation_option_form' ) do
+        .btn-group.btn-group-vertical{:data => {:toggle => 'buttons-checkbox'}}
+          -@kits.each_with_index do |kit, idx|
+            %label.checkbox
+              = check_box_tag 'kit[]', kit.to_json, false, :id => idx
+              %span=kit.to_json
+
+          .row-fluid= submit_tag 'Generate selected kits', :class => 'btn'
+      
+      %h1 Extra Information
+      -@preview.each do |infoitem|
+        .row-fluid
+          %strong=infoitem[:label]
+        -if infoitem[:lists]
+          -infoitem[:lists].each do |list|
+            %strong=list[:label]
+            %ul
+              -list[:list].each do |li|
+                %li=li
+              
+-content_for :action_specific_js do 
+  ldc_tasks.init_kit_generation_preview();

@@ -1,0 +1,81 @@
+$(document).ready ->
+    # modal handling is a big tricky given the embedding of divs:
+    # the fade screen handler will close the modal
+    # clicking on the inner modal triggers the same event because it's within the fade screen,
+    # however, the inner handler is executed first, so it uses block-close to block the closing,
+    # which is then removed by the fade screen handler
+    # the close button is within the inner modal, so the same toggling of block-close occurs,
+    # however, the close handler closes the modal
+
+    close_modal = (x) ->
+        $(x).parents('.modal').removeClass('open')
+        $("body").removeClass("modal-open");
+
+    $('body').on 'click', '.modal-trigger', ->
+        $(this).parents('.modal').addClass('open')
+        $("body").addClass("modal-open")
+
+    $('body').on "click", ".modal-fade-screen", ->
+        if $('body').hasClass('block-close')
+            $('body').removeClass('block-close')
+        else
+            close_modal this
+
+    $('body').on 'click', ".modal-close", ->
+        close_modal this
+
+    $('body').on 'click', ".close-btn", ->
+        close_modal this
+
+    $('body').on 'click', ".modal-inner", ->
+        $('body').addClass('block-close')
+
+    $('body').on 'click', '.close', ->
+        $(this).parents('.flash').remove()
+
+    $('body').on 'js-accordion-trigger', ->
+        $(this).parent().find('.submenu').slideToggle('fast')
+        $(this).parent().toggleClass('is-expanded')
+        e.preventDefault();
+
+    # this is bad
+    $('body').on "ajax:success", (e, data, status, xhr) ->
+        $('.edit_node_class').replaceWith('success')
+        console.log e
+    $('body').on "ajax:error", (e, data, status, xhr) ->
+        $('.edit_node_class').replaceWith('error')
+
+    array2html = (a) ->
+        if a is null
+            return ''
+        name = a[0]
+        children = a[a.length-1]
+        s = '<' + name
+        i = 1
+        while a.length > i + 1
+            s += " #{a[i]}=\"#{a[i+1]}\""
+            i += 2
+        if children instanceof Array
+            if children.length > 0
+                s += '>'
+                $.each children, (x,y) ->
+                    s += array2html y
+                return "#{s}</#{name}>"
+            else
+                return "#{s}/>"
+        else
+            return "#{s}>#{children}</#{name}>"
+
+    hide_show = (b, hide, show) ->
+        if b
+            $(hide).hide()
+            $(show).show() if show
+        else
+            $(show).hide()
+            $(hide).show() if show
+
+    $('.sign-in').on 'click', ->
+        if $('#signinform').is(":hidden")
+            $('#signinform').show()
+        else
+            $('#signinform').hide()

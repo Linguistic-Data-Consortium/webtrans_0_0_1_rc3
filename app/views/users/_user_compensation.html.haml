@@ -1,0 +1,36 @@
+%tr
+  %td
+    -if !compensation.task_id.nil?
+      =compensation.project.name
+    -else
+      ="n/a"
+  %td
+    -if !compensation.task_id.nil?
+      =compensation.task.name
+    -else
+      ="n/a"
+  %td
+    -if compensation.type == "RateCompensation"
+      =(compensation.unpaid_units + compensation.paid_units)
+    -else
+      ="One Time Payment"
+  %td
+    -if compensation.type == "RateCompensation"
+      ="$" + number_with_precision(compensation.rate, :precision => 2)
+    -else
+      ="n/a"
+  %td
+    -if compensation.type == "OtherCompensation"
+      =compensation.string_payment
+    -else
+      ="$" + number_with_precision((compensation.amount_paid + compensation.amount_owed), :precision => 2)
+  %td
+    -if compensation.type == "OtherCompensation"
+      ="n/a"
+    -else
+      ="$" + number_with_precision(compensation.amount_paid, :precision => 2)
+  %td
+    -if compensation.type == "OtherCompensation"
+      ="n/a"
+    -else
+      ="$" + number_with_precision(compensation.amount_owed, :precision => 2)

@@ -1,0 +1,18 @@
+- case @state
+- when 'train'
+  %h1
+    Welcome!
+  %h3
+    Before you can take the ReadMe Study test kit, you must read the ReadMe Study Guidelines and watch the ReadMe Study Training video on YouTube.
+  %div{ :style => 'margin: 20px' }
+    = link_to 'guidelines PDF', "/mr_phase3_eval_guidelines.pdf", :target => '_blank'
+  %div{ :style => 'margin: 20px' }
+    = link_to 'training video', "http://www.youtube.com/watch?v=ajhF1mnhh-Y", :target => '_blank'
+  = form_tag("/tools/workflow_mr_phase3_eval/work/#@tuid", :method => 'post') do
+    = hidden_field_tag :input, 'verify_train'
+    = submit_tag 'Certify'
+  %div
+    %h4 I certify that I have read the ReadMe Study Guidelines in their entirety and watched the ReadMe Study training video in its entirety.
+- when 'test'
+  %h1
+    ready to test

@@ -1,0 +1,41 @@
+window.ldc_kits = ( ->
+    init_mongo_query: (arbitrary_row_html) ->
+        #listener on add pair button to add a new range
+        $('#add_arbitrary_pair').on 'click', ->
+            $('#arbitrary-table tbody').append(arbitrary_row_html);
+
+        #listener on remove buttons to remove a row
+        $('#arbitrary-table').on 'click', '.remove_button', ->
+            $(this).parents('tr').remove();
+
+        #listener that submits the parent form and updates the results pane with the json reply
+        $('.show-button').on 'click', ->
+            $.post '/kits/1/mongo_results', $(this).parents('form').serialize(), (data) ->
+                $('#results').html(data.results_html);
+            , 'json'
+
+    #this function is called when loading the list kits screen for any given state
+    init_task: ->
+        #setup the ajax datatable for the kits
+        $('#kits').dataTable
+            paging: false
+            scrollY: '400px'
+            scrollCollapse: true
+            sAjaxSource: $('#kits').data('source')
+            order: [[1, "asc"]]
+
+        #listener on reassign kit links that opens the dialog fr that kit
+        $('#kits_wrapper').on 'click', '.reassign_kit', (e) ->
+            # e.preventDefault();
+            $('#reassign_kit_modal #kit').val($(this).attr('kit_id'));
+            $('#reassign_kit_modal').addClass('open');
+            $("body").addClass("modal-open");
+
+    #this function is called when loading the kit management screen
+    init_management: (change_kits_path) ->
+        #listener to submit update kit state form
+        $('#update_kit_state').on 'click', ->
+            $.post change_kits_path, {kit: $('#kit').val(), state: $('#state').val()}, (data) ->
+                ldc_lui.display_alert(data.type, data.message)
+
+)()

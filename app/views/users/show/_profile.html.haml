@@ -1,0 +1,26 @@
+%div
+  %ul
+    %li
+      %strong Name:
+      = @user.name
+    %li
+      %strong Account Type:
+      = @user.account_type
+    %li
+      %strong Created:
+      = @user.created_at.to_date
+    %li
+      %strong Updated:
+      = @user.updated_at.to_date
+    - if pii_manager?
+      - if pii?
+        = "PII until #{(current_user.pii_session+1.hour).getlocal}"
+      - else
+        = link_to "start a pii session", "/users/#{current_user.id}?pii=true"
+- if admin?
+  %div
+    = button_to 'Transcription', '/browser/transcription', :method => "get"
+  %div
+    = link_to 'namespaces', '/class_defs'
+  %div
+    = @page_hits

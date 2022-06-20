@@ -1,0 +1,19 @@
+= form_for(@lang) do |f|
+  = f.hidden_field(:id, :value => @lang.id)
+  %label Language name
+  = f.text_field :ref_name
+  %label Language code (ISO 639-3 or custom)
+  = f.text_field :iso_id
+  %label LDC code
+  = f.text_field :ldc_code
+  %label Language scope
+  = f.select :lang_scope, [['Individual', 'I'], ['Macrolanguage', 'M'], ['Special', 'S']], :prompt => "Select"
+  %label Language type
+  = f.select :lang_type, [['Ancient', 'A'], ['Constructed', 'C'], ['Extinct', 'E'], ['Historical', 'H'], ['Living', 'L'], ['Special', 'S']], :prompt => "Select"
+  %label Description
+  = f.text_field :description
+  %label Comment
+  = f.text_field :comment
+  %label Is Custom Code?
+  = f.check_box :custom
+  = f.submit

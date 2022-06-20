@@ -1,0 +1,15 @@
+-content_for :head do
+  =javascript_include_tag 'nodes'
+#compatibility
+%div
+  %div
+    Recording.  Depends on MediaRecorder API
+  %div
+    Safari introduced MediaRecorder in version 13, release 9/18/19.
+  %div
+    Safari version 12 allowed MediaRecorder to be switched on.
+  %div
+    Safari on iOS allows it to be switch on in versions 12 and 13.
+    settings > safari > experimental > media  recorder
+-content_for :action_specific_js do
+  ldc_nodes.compatibility()

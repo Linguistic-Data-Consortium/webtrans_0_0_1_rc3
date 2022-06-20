@@ -1,0 +1,52 @@
+- if [ "Label", "EntryLabel", "Entry", "Ref" ].include? parent_name#special handling for labels
+  %div
+    %label.inline Text
+    %input.userinput{:type => 'text', :id => "childtext-#{nc.id}", :name => "child_text", :value => child['label'], :original => child['label']}
+  %div
+    %label.inline Input Source Field
+    %input.userinput{:type => 'text', :id => "childinputsource-#{nc.id}", :name => "child_input_source", :value => child['input_source'], :original => child['input_source']}
+
+
+-elsif parent_name == "Button"
+  -text, action = child['label'], action = child['message']
+  -text = "" if text.nil?
+  -action = "" if action.nil?
+  %div
+    %label.inline Text
+    %input.userinput{:type => 'text', :id => "childtext-#{nc.id}", :name => "child_text", :value => text, :original => text}
+  %div
+    %label.inline Message
+    %input.userinput{:type => 'text', :id => "childaction-#{nc.id}", :name => "child_action", :value => action, :original => action}
+
+-elsif choicelist_supertypes.include? parent_name #special handling for menus/radio
+  %li
+    %label.inline Value
+    %input.userinput{:type => 'text', :id => "childtext-#{nc.id}", :name => "child_choice_value[]", :value => child[0], :original => child[0], :style => "width: 100px;"}
+    %label.inline Label
+    %input.userinput{:type => 'text', :id => "childtext-#{nc.id}", :name => "child_choice_label[]", :value => child[1], :original => child[1], :style => "width: 180px;"}
+    %button.close.float-none{:type => 'button', :title => 'Remove child'} &times;
+
+-elsif parent_name == "Table"
+  %li
+    %strong Header
+    %input.userinput{:id => "childtext-#{nc.id}", :name => "child_header_label[]", :value => child['label'], :original => child['label'], :style => "width: 100px;"}
+    %strong Sort
+    -options_string = String.new
+    -['Yes', 'No'].each do |opt|
+      -options_string << "<option#{child['sort'] == opt ? " selected=\"selected\"" : ""}>#{opt}</option>"
+    =select_tag "child_header_sort[]", options_string.html_safe, :original => child['sort'], :value => child['sort'], :class => "userselect"
+    %button.close.float-none{:type => 'button', :title => 'Remove child'} &times;
+
+-else#A.B:C, where A is the childname and B:C is the namespace qualified child type
+  -if !child.index(":").nil? && !child.index(".").nil?#keep this at least until other syntaxes are handled specially
+    -type = child[child.index(":")+1..-1]
+    -name = child[0..child.index(".")-1]
+    -name = name.gsub('_', ' ') if parent_name == 'Tabs'#decoding the Tabs children names
+    %li
+      %label.inline Name
+      %input.userinput{:type => 'text', :id => "childname-#{nc.id}", :name => "child_name[]", :value => name, :original => name, :style => "width: 120px;"}
+      %label.inline.cursor.child_type_selector{:title => "Click to specify type"} Type
+      -class_type = type == name ? 'userinput' : 'userinput'
+      %input{:type => 'text', :id => "childtype-#{nc.id}", :name => "child_type[]", :value => type, :original => type, :style => 'width:120px; display:none;', :class => class_type}
+      -unless list_supertypes.include? parent_name
+        %button.close.float-none{:type => 'button', :title => 'Remove child'} &times;

@@ -1,0 +1,638 @@
+@kbsearch = 
+  init: (type) ->
+
+    array2html = (a) ->
+      if a == null
+        return ''
+      name = a[0]
+      children = a[a.length - 1]
+      s = '<' + name
+      i = 1
+      while a.length > i + 1
+        s += ' ' + a[i] + '=' + '"' + a[i + 1] + '"'
+        i += 2
+      if children instanceof Array
+        if children.length > 0
+          s += '>'
+          $.each children, (x, y) ->
+            s += array2html(y)
+            return
+          s + '</' + name + '>'
+        else
+          s + '/>'
+      else
+        s + '>' + children + '</' + name + '>'
+
+    search_box = ->
+      array2html [
+        'div'
+        'id'
+        'search-form'
+        'class'
+        'quarter'
+        [
+          [
+            'div'
+            'id'
+            'update_results_div'
+            ''
+          ]
+          [
+            'div'
+            'id'
+            'search_terms'
+            ''
+          ]
+          [
+            'div'
+            'id'
+            'search_exact'
+            ''
+          ]
+          [
+            'div'
+            'id'
+            'country_filter'
+            ''
+          ]
+          [
+            'div'
+            'id'
+            'feature_classes_filter'
+            ''
+          ]
+          [
+            'div'
+            'id'
+            'deselect_box'
+            ''
+          ]
+        ]
+      ]
+
+    search_results = ->
+      array2html [
+        'div'
+        'id'
+        'search_table'
+        'class'
+        'threequarters'
+        ''
+      ]
+
+    $('#search').html search_box()
+    $('#search').append search_results()
+    switch type
+      when 'gpe'
+        $('#update_results_div').append array2html([
+          'button'
+          'id'
+          'update_results'
+          'Update Search Results'
+        ])
+        $('#search_terms').append array2html([
+          'input'
+          'id'
+          'search_text'
+          'placeholder'
+          'Enter Search Term(s)'
+          ''
+        ])
+        $('#search_exact').append array2html([
+          'input'
+          'id'
+          'exact'
+          'type'
+          'checkbox'
+          ''
+        ]), array2html([
+          'label'
+          'for'
+          'exact'
+          'class'
+          'inline'
+          'Exact Match'
+        ])
+        $('#country_filter').append array2html([
+          'select'
+          'id'
+          'countries'
+          ''
+        ])
+        $('#countries').append array2html([
+          'option'
+          'value'
+          ''
+          'Filter by country'
+        ])
+        $('#feature_classes_filter').append array2html([
+          'div'
+          'Select Feature Class(es)'
+        ])
+        $('#deselect_box').append array2html([
+          'button'
+          'id'
+          'deselect_button'
+          'Deselect All'
+        ])
+        $.ajax
+          url: '/kb/get_countries'
+          type: 'GET'
+          dataType: 'script'
+          success: (data) ->
+            countries = JSON.parse(data)
+            countries.forEach (country) ->
+              $('#countries').append array2html([
+                'option'
+                'value'
+                country.kb_entity.iso
+                country.kb_entity.country
+              ])
+              return
+            return
+        $.ajax
+          url: '/kb/get_feature_classes'
+          type: 'GET'
+          dataType: 'script'
+          success: (data) ->
+            feature_classes = JSON.parse(data)
+            feature_classes.forEach (feature_class) ->
+              $('#feature_classes_filter').append '<div>' + array2html([
+                'input'
+                'type'
+                'checkbox'
+                'id'
+                'fc-' + feature_class.kb_entity.uid
+                'class'
+                'feature'
+                ''
+              ]) + array2html([
+                'label'
+                'for'
+                'fc-' + feature_class.kb_entity.uid
+                'class'
+                'inline'
+                feature_class.kb_entity.name
+              ]) + '</div>'
+              return
+            return
+        $('#deselect_button').click ->
+          $('.feature').attr 'checked', false
+          return
+        $('#update_results').click ->
+          $('#search_table .dataTables_wrapper').remove()
+          $('#search_results').remove()
+          $('#spinner').remove()
+          $('#update_results_div').append array2html([
+            'img'
+            'src'
+            '/assets/spinner.gif'
+            'id'
+            'spinner'
+            ''
+          ])
+          text = $('#search_text').val()
+          selected_country = $('#countries').val()
+          features = ''
+          $('.feature').each (index, f) ->
+            if f.checked == true
+              if features != ''
+                features += ','
+              features += f.id.split('-')[1]
+            return
+          param_string = undefined
+          if text != ''
+            param_string = 'text=' + text
+          if selected_country != ''
+            param_string += '&country_code=' + selected_country
+          if $('#exact').prop('checked')
+            param_string += '&exact=true'
+          if features != ''
+            param_string += '&feature_classes=' + features
+          $.ajax
+            url: '/kb/search?type=gpe&' + param_string
+            type: 'GET'
+            dataType: 'script'
+            success: (data) ->
+              results = JSON.parse(data)
+              console.log results
+              $('#search_table').append array2html([
+                'table'
+                'id'
+                'search_results'
+                [
+                  [
+                    'thead'
+                    [ [
+                      'tr'
+                      [
+                        [
+                          'th'
+                          'Name'
+                        ]
+                        [
+                          'th'
+                          'Country'
+                        ]
+                        [
+                          'th'
+                          'Feature Class'
+                        ]
+                        [
+                          'th'
+                          'Feature Code'
+                        ]
+                        [
+                          'th'
+                          'Admin1 Code'
+                        ]
+                        [
+                          'th'
+                          'Admin2 Code'
+                        ]
+                        [
+                          'th'
+                          'Linked to Current Name?'
+                        ]
+                      ]
+                    ] ]
+                  ]
+                  [
+                    'tbody'
+                    ''
+                  ]
+                ]
+              ])
+              results.forEach (result) ->
+                $('#search_results tbody').append array2html([
+                  'tr'
+                  'class'
+                  'EntityRow nonselectedSearchRow'
+                  'id'
+                  result.uid
+                  [
+                    [
+                      'td'
+                      result.name
+                    ]
+                    [
+                      'td'
+                      result.country_code_name
+                    ]
+                    [
+                      'td'
+                      result.feature_class_name
+                    ]
+                    [
+                      'td'
+                      result.feature_code_name
+                    ]
+                    [
+                      'td'
+                      result.admin1_code_name
+                    ]
+                    [
+                      'td'
+                      result.admin2_code_name
+                    ]
+                    [
+                      'td'
+                      'N'
+                    ]
+                  ]
+                ])
+                ldc_click.handlers.LoreleiEdl.SetYN()
+                return
+              kbsearch.init_index()
+              $('#spinner').remove()
+              return
+          return
+        $('#search_text').keydown (e) ->
+          if e.which == 13
+            #Enter key pressed
+            $('#update_results').click()
+            #Trigger search button click event
+          return
+      when 'org'
+        $('#update_results_div').append array2html([
+          'button'
+          'id'
+          'update_results'
+          'Update Search Results'
+        ])
+        $('#search_terms').append array2html([
+          'input'
+          'id'
+          'search_text'
+          'placeholder'
+          'Enter Search Term(s)'
+          ''
+        ])
+        $('#search_exact').append array2html([
+          'input'
+          'id'
+          'exact'
+          'type'
+          'checkbox'
+          ''
+        ]), array2html([
+          'label'
+          'for'
+          'exact'
+          'class'
+          'inline'
+          'Exact Match'
+        ])
+        $('#update_results').click ->
+          $('#search_table .dataTables_wrapper').remove()
+          $('#search_results').remove()
+          $('#update_results_div').append array2html([
+            'img'
+            'src'
+            '/assets/spinner.gif'
+            'id'
+            'spinner'
+            ''
+          ])
+          text = $('#search_text').val()
+          param_string = undefined
+          if text != ''
+            param_string = 'text=' + text
+          if $('#exact').prop('checked')
+            param_string += '&exact=true'
+          $.ajax
+            url: '/kb/search?type=org&' + param_string
+            type: 'GET'
+            dataType: 'script'
+            success: (data) ->
+              results = JSON.parse(data)
+              console.log results
+              $('#search_table').append array2html([
+                'table'
+                'id'
+                'search_results'
+                [
+                  [
+                    'thead'
+                    [ [
+                      'tr'
+                      [
+                        [
+                          'th'
+                          'Name'
+                        ]
+                        [
+                          'th'
+                          'Associated GPE/LOC'
+                        ]
+                        [
+                          'th'
+                          'Parent ORG'
+                        ]
+                        [
+                          'th'
+                          'KB'
+                        ]
+                        [
+                          'th'
+                          'Linked to Current Name?'
+                        ]
+                      ]
+                    ] ]
+                  ]
+                  [
+                    'tbody'
+                    ''
+                  ]
+                ]
+              ])
+              results.forEach (result) ->
+                $('#search_results tbody').append array2html([
+                  'tr'
+                  'class'
+                  'EntityRow nonselectedSearchRow'
+                  'id'
+                  result.uid
+                  [
+                    [
+                      'td'
+                      result.name
+                    ]
+                    [
+                      'td'
+                      result.gpe_loc_of_association
+                    ]
+                    [
+                      'td'
+                      result.parent_org
+                    ]
+                    [
+                      'td'
+                      result.origin
+                    ]
+                    [
+                      'td'
+                      'N'
+                    ]
+                  ]
+                ])
+                ldc_click.handlers.LoreleiEdl.SetYN()
+                return
+              kbsearch.init_index()
+              $('#spinner').remove()
+              return
+          return
+        $('#search_text').keydown (e) ->
+          if e.which == 13
+            #Enter key pressed
+            $('#update_results').click()
+            #Trigger search button click event
+          return
+      when 'per'
+        $('#update_results_div').append array2html([
+          'button'
+          'id'
+          'update_results'
+          'Update Search Results'
+        ])
+        $('#search_terms').append array2html([
+          'input'
+          'id'
+          'search_text'
+          'placeholder'
+          'Enter Search Term(s)'
+          ''
+        ])
+        $('#search_exact').append array2html([
+          'input'
+          'id'
+          'exact'
+          'type'
+          'checkbox'
+          ''
+        ]), array2html([
+          'label'
+          'for'
+          'exact'
+          'class'
+          'inline'
+          'Exact Match'
+        ])
+        $('#update_results').click ->
+          $('#search_table .dataTables_wrapper').remove()
+          $('#search_results').remove()
+          $('#update_results_div').append array2html([
+            'img'
+            'src'
+            '/assets/spinner.gif'
+            'id'
+            'spinner'
+            ''
+          ])
+          text = $('#search_text').val()
+          param_string = undefined
+          if text != ''
+            param_string = 'text=' + text
+          if $('#exact').prop('checked')
+            param_string += '&exact=true'
+          $.ajax
+            url: '/kb/search?type=per&' + param_string
+            type: 'GET'
+            dataType: 'script'
+            success: (data) ->
+              results = JSON.parse(data)
+              console.log results
+              $('#search_table').append array2html([
+                'table'
+                'id'
+                'search_results'
+                [
+                  [
+                    'thead'
+                    [ [
+                      'tr'
+                      [
+                        [
+                          'th'
+                          'Name'
+                        ]
+                        [
+                          'th'
+                          'Title'
+                        ]
+                        [
+                          'th'
+                          'Associated GPE/LOC'
+                        ]
+                        [
+                          'th'
+                          'Associated ORG'
+                        ]
+                        [
+                          'th'
+                          'KB'
+                        ]
+                        [
+                          'th'
+                          'Linked to Current Name?'
+                        ]
+                      ]
+                    ] ]
+                  ]
+                  [
+                    'tbody'
+                    ''
+                  ]
+                ]
+              ])
+              results.forEach (result) ->
+                $('#search_results tbody').append array2html([
+                  'tr'
+                  'class'
+                  'EntityRow nonselectedSearchRow'
+                  'id'
+                  result.uid
+                  [
+                    [
+                      'td'
+                      result.name
+                    ]
+                    [
+                      'td'
+                      result.title_or_position
+                    ]
+                    [
+                      'td'
+                      result.gpe_loc_of_association
+                    ]
+                    [
+                      'td'
+                      result.org_of_association
+                    ]
+                    [
+                      'td'
+                      result.origin
+                    ]
+                    [
+                      'td'
+                      'N'
+                    ]
+                  ]
+                ])
+                ldc_click.handlers.LoreleiEdl.SetYN()
+                return
+              kbsearch.init_index()
+              $('#spinner').remove()
+              return
+          return
+        $('#search_text').keydown (e) ->
+          if e.which == 13
+            #Enter key pressed
+            $('#update_results').click()
+            #Trigger search button click event
+          return
+    # kbsearch.init_index()
+    return
+  init_index: ->
+    $('#search_results').dataTable
+      destroy: true
+      sPaginationType: 'full_numbers'
+      bJQueryUI: true
+    return
+  getDetailedEntry: (uid, target_node) ->
+    if $('.Root').hasClass('per')
+        type = 'per'
+    else if $('.Root').hasClass('org')
+        type = 'org'
+    else
+        type = 'gpe'
+    param_string = "uid=" + uid + "&type=" + type
+    console.log(target_node)
+    $(target_node).find('.DetailedTable').remove()
+    $.ajax
+        url: '/kb/search?' + param_string
+        type: 'GET'
+        success: (data) ->
+            console.log(data)
+            result = data
+            $(target_node).append ldc_nodes.array2html(['table', 'id', result.uid, 'class', 'DetailedTable', '' ])
+            for key, val of result
+                if key is 'ext_link'
+                    $(target_node).find('.DetailedTable').append ldc_nodes.array2html([ 'tr', [ ['th', key], ['td', result.ext_link.join(", ") if result.ext_link.length > 0] ] ])
+                else if key isnt 'id'
+                    $(target_node).find('.DetailedTable').append ldc_nodes.array2html([ 'tr', [ ['th', key], ['td', val] ] ])
+              if type is 'gpe' and target_node is '.DetailedEntryLabel'
+                if result.latitude isnt null && result.longitude isnt null
+                    $('.MapButton').html('Google Maps')
+                    $('.MapButton').wrapAll( ldc_nodes.array2html([ 'a', 'id', 'mapwrap', 'href', 'https://www.google.com/maps/search/' + result.latitude + '+' + result.longitude + '/', 'target', '_blank', '']) )
+                else
+                    $('#mapwrap .MapButton').unwrap()
+                    $('.MapButton').html('No Lat/Long')
+                $('.GeoButton').wrapAll( ldc_nodes.array2html([ 'a', 'href', 'http://www.geonames.org/' + result.uid + '/', 'target', '_blank', '']) )
+                if result.ext_link[0] isnt null
+                    console.log result.ext_link[0]
+                    $('.WikButton').html "External Link"
+                    $('.WikButton').wrapAll( ldc_nodes.array2html([ 'a', 'id', 'wikwrap', 'href', result.ext_link[0], 'target', '_blank', '']) )
+                else
+                    $('#wikwrap .WikButton').unwrap()
+                    $('.WikButton').html "No Link"

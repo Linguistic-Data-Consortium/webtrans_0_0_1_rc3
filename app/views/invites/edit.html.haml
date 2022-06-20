@@ -1,0 +1,79 @@
+-content_for :head do
+  = javascript_pack_tag 'users', defer: true
+.curve_wrapper
+  .home_title
+    %h1.header Sign up
+  .regform
+    -if signed_in?
+      .p.white
+        You are currently logged in. You must log out to create a new account.
+    -else
+      = form_for(@user, url: invite_path) do |f|
+        = render 'shared/error_messages'
+        = f.label :name, 'Screen name', class: "description"
+        %div
+        = f.text_field :name, class: 'element text medium'
+        .p.white.form_width
+          Need not be your real name.
+        .white#name-alert
+        -# %br
+        -# = f.label :ack_name, 'Acknowledgement Name (optional)', class: "description"
+        -# %div
+        -# = f.text_field :ack_name, class: 'element text medium'
+        -# .p.white.form_width
+        -#   The name that will appear if a project acknowledges contributors,
+        -#   for example, in publications or presentations. Need not be your real name.
+        %br
+        = f.label :email, class: "description"
+        %div
+          = f.email_field :email, class: 'element text medium'
+        .white#email-alert
+        .p.white.form_width
+          Used to send verification link and periodic notices of updates. Never shared.
+        %br
+        = f.label :password, class: "description"
+        %div
+          = f.password_field :password, class: 'element text medium'
+        .p.white.form_width
+          At least 8 characters. We will never share your password in any way.
+        .white#password-alert
+        %br
+        = f.label :password_confirmation, 'Confirm Password', class: "description"
+        %div
+          = f.password_field :password_confirmation, class: 'element text medium'
+        .white#password_confirm-alert
+        %br
+        %hr
+        -# %br
+        -# %h2.white Demographic Information (optional)
+        -# .p.white.form_width
+        -#   Shared with research data results. 
+        -# %br
+        -# = f.fields_for :profile_attributes do |profile|
+        -#   = profile.label :year_of_birth, 'Year of Birth', class: "description"
+        -#   %div
+        -#     = profile.text_field :year_of_birth, class: 'element text medium'
+        -#   %br
+        -#   = profile.label :gender, 'Gender', class: "description"
+        -#   %div.form_width.white.autowrap
+        -#     .radio
+        -#       = profile.radio_button :gender_radio, "Male"
+        -#       = profile.label :gender_radio, "Male"
+        -#     .radio
+        -#       = profile.radio_button :gender_radio, "Female"
+        -#       = profile.label :gender_radio, "Female"
+        -#     .radio.form_width
+        -#       = profile.radio_button :gender_radio, "Other"
+        -#       = profile.label :gender_radio, "Other"
+        -#       = profile.text_field :gender_other, class: 'element text medium'
+        -#   = profile.label :cities, 'Places you have lived: City, (state), Country', class: "description"
+        -#   %div
+        -#     = profile.text_field :cities, class: 'element text medium'
+        -#   = profile.label :languages_known, 'Languages you speak', class: "description"
+        -#   %div
+        -#     = profile.text_field :languages_known, class: 'element text medium'
+        -# = f.check_box :terms_agreed, class: 'element checkbox'
+        -# = f.label :terms_agreed, sanitize("By signing up you agree to our #{link_to "Terms of Service", terms_path, class: "underline"} (required)"), class: "checkbox-inline description"
+        = f.submit "Sign up", class: "button button-primary", id: "submit"
+-content_for :action_specific_js do
+  ldc_users.init_new();

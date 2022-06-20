@@ -1,0 +1,15 @@
+.modal-fade-screen
+  .modal-inner
+    .modal-close
+    .modal-header New Dataset
+    .modal-body
+      =form_for @data_set, :remote => true, format: :json do |f|
+        %label Dataset Name
+        = f.text_field :name
+        %label Dataset Description
+        = f.text_field :description
+        %label Dataset File
+        = f.file_field :spec
+        %input{:type => 'hidden', :id => "data_set_for_task", :name => "data_set[for_task]", :value => ""}
+        .modal-footer
+          = f.submit 'Save', :class => 'btn btn-primary close-btn'

@@ -1,0 +1,38 @@
+$("#ribbon").empty();
+$("#ribbon").append("Ribbon for Task: #{@task.name}");
+-if !@task.meta["chat_room_link"].blank?
+  $("#chat").attr("href", "#{@task.meta["chat_room_link"]}");
+-else
+  $("#chat").removeAttr("href");
+-if !@task.meta["mail_list_link"].blank?
+  $("#mail").attr("href", "#{@task.meta["mail_list_link"]}");
+-else
+  $("#mail").removeAttr("href");
+-if !@task.meta["training_link"].blank?
+  -if @task.meta["training_link"].starts_with?("/")
+    $("#training").attr("href", "/tasks/#{@task.id}/download?lid=training_link");
+  -else
+    $("#training").attr("href", "#{@task.meta["training_link"]}");
+-else
+  $("#training").removeAttr("href");
+-if !@task.meta["task_guidelines_link"].blank?
+  -if @task.meta["task_guidelines_link"].starts_with?("/")
+    $("#training").attr("href", "/tasks/#{@task.id}/download?lid=task_guidelines_link");
+  -else
+    $("#guidelines").attr("href", "#{@task.meta["task_guidelines_link"]}");
+-else
+  $("#guidelines").removeAttr("href");
+-if !@task.meta["schedule_session_link"].blank?
+  -if @task.meta["schedule_session_link"].starts_with?("/")
+    $("#training").attr("href", "/tasks/#{@task.id}/download?lid=schedule_session_link");
+  -else
+    $("#session").attr("href", "#{@task.meta["schedule_session_link"]}");
+-else
+  $("#session").removeAttr("href");
+-if !@task.meta["supervisor_link"].blank?
+  -if @task.meta["supervisor_link"].starts_with?("/")
+    $("#training").attr("href", "/tasks/#{@task.id}/download?lid=supervisor_link");
+  -else
+    $("#supervisor").attr("href", "#{@task.meta["supervisor_link"]}");
+-else
+  $("#supervisor").removeAttr("href");

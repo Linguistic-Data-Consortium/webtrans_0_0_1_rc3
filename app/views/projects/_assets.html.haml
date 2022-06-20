@@ -1,0 +1,17 @@
+%label Project Assets
+.project_assets
+    -if project.assets.size == 0
+        = "No assets uploaded."
+    -project.assets.each do |a|
+        .asset
+            -if a.blob.content_type.start_with?("image")
+                = image_tag(a)
+            -elsif a.blob.content_type.start_with?("audio")
+                = audio_tag( url_for(a), controls: true )
+            -elsif a.blob.content_type.start_with?("video")
+                = video_tag( url_for(a), controls: true )
+            -else
+                %i.fas.fa-file.fa-5x
+            = a.blob.filename
+            Delete?
+            <input type="checkbox" name="project[assets_destroy][#{a.id}]" id="project_assets_destroy" value="#{a.id}">

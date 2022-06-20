@@ -1,0 +1,10 @@
+development:
+  adapter: async
+
+test:
+  adapter: test
+
+production:
+  adapter: redis
+  url: "redis://<%=ENV['REDIS_HOST'] || 'redis' %>:6379/1"
+  channel_prefix: ua_production

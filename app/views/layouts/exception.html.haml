@@ -1,0 +1,22 @@
+-if !Rails.env.test?
+  %div
+    An error occurred while loading this page, please refresh and/or try this action again. If this issue persists, please report it to the LDC, with the following information.
+  - if @current_user and @current_user.current_task_user
+    %div
+      task
+      = @current_user.current_task_user.task_id
+    %div
+      kit
+      = @current_user.current_task_user.kit_oid
+  %div
+    = link_to "Return to your profile.", "/"
+  %br/
+  %h1 Exception
+  = @e.to_s
+  -if admin?
+    %br/
+    %h1 Backtrace
+    -current_path = File.expand_path('.') + '/'
+    -@e.backtrace.each do |line|
+      =line.sub(current_path, '')
+      %br/

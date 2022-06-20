@@ -1,0 +1,14 @@
+window.ldc_glgc = ( ->
+    data = null
+    progress_report = {}
+    progress_summary = {}
+    progress_summary['enrolled'] = 0
+    progress_summary['num0'] = 0
+    progress_summary['num1'] = 0
+    progress_summary['num29'] = 0
+    progress_summary['num10'] = 0
+    progress_summary['num11'] = 0
+    ulcomp = (a) -> [ 'ul', ( [ 'li', x ] for x in a ) ]
+    init: (text) ->
+        that = this
+ )()

@@ -1,0 +1,20 @@
+#add_game_modal.modal
+  %label
+    .modal-trigger
+      %button Create Game Variant
+  .modal-fade-screen
+    .modal-inner
+      .modal-close
+      .modal-body
+        %h1 Add Game Variant
+        = form_for(@game_variant) do |f|
+          %label Variant Name
+          = f.text_field :name
+          %label Game
+          = f.collection_select :game_id, @games, :id, :name, :prompt => true
+          #metadiv
+            %label Meta
+            = f.hidden_field :meta, :class => "hidden_meta"
+          <button id="addkvpair" class="btn btn-default">Add Key/Value Pair</button>
+          %div
+          = f.submit 'Save', :class => 'btn btn-primary submit'

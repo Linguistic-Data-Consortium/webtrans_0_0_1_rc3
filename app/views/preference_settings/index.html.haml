@@ -1,0 +1,17 @@
+-if admin?
+  %h1 All preference settings
+-else
+  %h1= "Preference settings for #{current_user.name}"
+
+.full.flexleft
+  = render :partial => "new"
+%table.display
+  %thead
+    %tr
+      -if admin? || @task && task_admin?
+        %th User
+      %th Preference Type
+      %th Value
+      %th Edit
+  %tbody
+    = render @preference_settings

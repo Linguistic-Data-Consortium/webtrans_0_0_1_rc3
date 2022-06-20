@@ -1,0 +1,21 @@
+-content_for :head do
+  = javascript_include_tag "game_variants"
+
+%h1 All game variants
+
+.full
+  - if admin?
+    .half
+      .flexleft
+        =render :partial => "new"
+%table.display
+  %thead
+    %tr
+      %th Id
+      %th Game Variant
+      %th Game
+      -if admin?
+        %th Edit
+        %th Delete
+  %tbody
+    = render @game_variants

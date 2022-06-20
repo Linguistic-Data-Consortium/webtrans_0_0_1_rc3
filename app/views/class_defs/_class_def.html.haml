@@ -1,0 +1,21 @@
+%tr
+  %td= link_to class_def.name, edit_class_def_path(class_def)
+  %td
+    %div
+      %button{ class: "tables #{class_def.id} #{class_def.name}" }
+        = class_def.name
+  %td
+    %div
+      %button{ class: "create_tables #{class_def.id} #{class_def.name}" }
+        = class_def.name
+  %td= link_to "tree", tree_viewer_class_def_path(class_def)
+  - if admin?
+    %td
+      -if class_def.locked
+        = link_to "unlock", "/class_def_tests/#{class_def.id}/set_lock/false", :data => {:confirm => "This will unlock #{class_def.name}, please confirm"}
+      -else
+        = link_to "lock", "/class_def_tests/#{class_def.id}/set_lock/true", :data => {:confirm => "This will lock #{class_def.name}, please confirm"}
+    - if false
+      %td= link_to "delete", class_def_path(class_def), :method => :delete, :data => {:confirm => "This will delete #{class_def.name}, please confirm"}, :title => "Delete #{class_def.name}"
+    - else
+      %td= 'delete'

@@ -1,0 +1,35 @@
+# by default, ignore everything...
+*
+# and add exceptions
+# exclude lock file!
+!Gemfile*
+!Procfile
+!Rakefile
+!app
+!app.*
+!babel.config.js
+!bin
+!bourbon
+!config
+!config.ru
+!db/migrate
+!db/seeds.rb
+!docker-entrypoint.sh
+!lib
+!node_modules
+!package.json
+!postcss.config.js
+!public/*.html
+!public/*.png
+!public/favicon.ico
+!public/robots.txt
+!public/assets
+!shell
+!vendor/assets
+!wait-for
+!tmp/.keep
+!ua.config
+!vite.config.ts
+
+# TODO - eliminate these if not necessary
+!db/schema.rb

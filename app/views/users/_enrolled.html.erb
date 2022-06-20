@@ -1,0 +1,11 @@
+<!-- <ul class="nav-tabs firstul">
+  <li class="tab-header-and-content firsttab">
+    <a href="javascript:void(0)" class="tab-link">Congratulations</a>
+    <div class="tab-content">
+     <h3>Congratulations, your enrollment in the Speech Biomarkers study is complete.</h3>
+     <%= link_to "Start Now", add_user_to_project_and_task_path(project_id: @pid, task_id: @tid), method: :post, class: "button button-primary" %>
+    <div>
+  </li>
+</ul> -->
+<h3>Congratulations, your enrollment in the Speech Biomarkers study is complete.</h3>
+<%= link_to "Start Now", add_user_to_project_and_task_path(project_id: @pid, task_id: @tid), method: :post, class: "button button-primary" %>

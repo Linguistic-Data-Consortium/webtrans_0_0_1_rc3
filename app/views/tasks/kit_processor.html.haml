@@ -1,0 +1,46 @@
+#tabs
+  %ul
+    -@tabs.each_with_index do |tab, i|
+      %li
+        =link_to tab[:label], "#tab-#{i}"
+  
+  -@tabs.each_with_index do |tab, i|
+    %div{:id => "tab-#{i}"}
+      = form_tag( process_kits_preview_project_task_path(@project, @task), :method => 'post', :id => 'kit_processor_option_form', :autocomplete => 'off', :multipart => true) do
+        =hidden_field_tag "option[tab]", i
+        =hidden_field_tag "option[FILE]"
+        -tab[:options].each do |option|
+          %ul.inline.align-top
+            -if option[:type] == 'select'
+              %li.no-list-bullet
+                %strong=option[:label]
+              %li.no-list-bullet
+                = select_tag "option[#{option[:label]}]", options_for_select(option[:options]), :include_blank => true
+            -if option[:type] == 'multiselect'
+              %li.no-list-bullet
+                %strong=option[:label]
+              %li.no-list-bullet
+                = select_tag "option[#{option[:label]}]", options_for_select(option[:options]), :multiple => true, :size => option[:options].count
+            -if option[:type] == 'text'
+              %li.no-list-bullet
+                %strong=option[:label]
+              %li.no-list-bullet
+                = text_field_tag "option[#{option[:label]}]"
+            -if option[:type] == 'textgroup'
+              %li.no-list-bullet
+                %strong=option[:label]
+              %li.no-list-bullet
+                -option[:textboxes].each do |text|
+                  .row-fluid
+                    %strong=text[:label]
+                    = text_field_tag "option[#{text[:label]}]"
+            -if option[:type] == 'readonly-list'
+              %li.no-list-bullet
+                %strong=option[:label]
+              %li.no-list-bullet
+                %ul
+                  -option[:options].each do |option|
+                    %li
+                      =option
+            
+        =submit_tag 'Preview', :class => 'btn'

@@ -1,0 +1,13 @@
+#add_namespace_modal.modal
+  %label
+    .modal-trigger
+      %button Add Namespace
+  .modal-fade-screen
+    .modal-inner
+      .modal-close
+      .modal-body
+        %h1 Add Namespace
+        = form_for(@class_def, as: :class_def, url: class_defs_path) do |f| 
+          %label Name
+          = f.text_field :name
+          = f.submit 'Save', :class => 'btn btn-primary'

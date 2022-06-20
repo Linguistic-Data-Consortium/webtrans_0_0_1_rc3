@@ -1,0 +1,17 @@
+-content_for :head do
+  = javascript_pack_tag 'tasks', defer: true
+
+%h1 All tasks
+
+%table#tasks.display
+  %thead
+    %tr
+      %th Id
+      %th Project
+      %th Task
+      %th Edit
+      %th Delete
+  %tbody
+    = render @tasks
+
+#action_specific_js.init_index

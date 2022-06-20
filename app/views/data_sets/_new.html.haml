@@ -1,0 +1,17 @@
+#add_data_set_modal.modal
+  %label
+    .modal-trigger
+      %button Create Data Set
+  .modal-fade-screen
+    .modal-inner
+      .modal-close
+      .modal-body
+        %h1 Add Data Set
+        = form_for(@data_set) do |f|
+          %label Name
+          = f.text_field :name
+          %label Description
+          = f.text_field :description
+          %label Spec File
+          = f.file_field :spec
+          = f.submit 'Save', :class => 'btn btn-primary'

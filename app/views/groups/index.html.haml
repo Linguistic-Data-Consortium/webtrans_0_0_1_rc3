@@ -1,0 +1,16 @@
+%h1 All Groups
+
+.full
+  .half
+    .half
+      .flexright
+        =render :partial => "new"
+%table.display
+  %thead
+    %tr
+      %th Name
+      %th Member Count
+      -if admin?
+        %th Delete
+  %tbody
+    = render @groups

@@ -1,0 +1,6 @@
+%tr
+  %td= task.id
+  %td= link_to task.project_name, task.project
+  %td= link_to task.name, [task.project, task]
+  %td= link_to "edit", edit_project_task_path(task.project, task)
+  %td= link_to "delete", [task.project, task], :method => :delete, :data => {:confirm => "You sure?"}, :title => "Delete #{task.name}"

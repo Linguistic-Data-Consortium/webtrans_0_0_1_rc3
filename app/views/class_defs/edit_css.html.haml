@@ -1,0 +1,16 @@
+%h1 Edit CSS
+
+%div
+  %strong Name:
+  - name = 'CSS for'
+  - name += " #{@class_def.name}" if @class_def
+  = name
+%div
+  %strong CSS
+%div.cssall
+  %button.expand-trigger.expand-hidden Edit
+  .expand-content
+    = form_tag "/class_defs/#{@class_def.id}/update_css", :method => 'update', :html => {:autocomplete => 'off'} do
+      = text_area_tag :css, @class_def.css
+      %div
+        = submit_tag "Save", :class => 'btn margin-bottom-10'

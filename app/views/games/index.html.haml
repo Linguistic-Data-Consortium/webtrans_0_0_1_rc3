@@ -1,0 +1,17 @@
+%h1 All games
+
+.full.flexleft
+  =render :partial => "new"
+%table.display
+  %thead
+    %tr
+      %th Id
+      %th Game
+      -if admin?
+        %th Edit
+        %th Delete
+  %tbody
+    = render @games
+
+-content_for :action_specific_js do
+  ldc_tasks.init_index();

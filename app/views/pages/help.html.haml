@@ -1,0 +1,24 @@
+%table
+  %tr
+    %td.main.align-top
+      %h1 Help
+      
+      %ul
+        %li
+          %strong Browser Compatibility
+          
+          %p The UA application should be compatible with most modern browsers, however we recommend using the latest versions of Chrome or Firefox. Should you encounter issues with other browsers, we recommend trying again with the latest Chrome or Firefox. 
+
+      -#if current_user.tasks.count > 0
+        %h1= "#{current_user.name}'s tasks"
+        
+        -current_user.tasks.each do |task|
+          = link_to task.name, project_task_path(task.project, task)
+          %br/
+          !=task.help
+          -if task.help_video && !task.help_video.empty?
+            %br/
+            %video{:controls => true, :preload => true, :width => 640, :height => 480}
+              %source{:src => "#{root_path}#{task.help_video}.mp4", :type => 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"' }
+              %source{:src => "#{root_path}#{task.help_video}.ogg", :type => 'video/ogg; codecs="theora, vorbis"' }
+  

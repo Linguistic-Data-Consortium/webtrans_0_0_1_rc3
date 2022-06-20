@@ -1,0 +1,70 @@
+%h4="Kit creation for task: #{@task.name} using workflow: #{@kit_type.name}"
+
+%ul.nav.nav-tabs
+  -@tabs.each_with_index do |tab, i|
+    %li{:class => "#{'active' if i == 0}"}= link_to tab[:label], "#tab-#{i}", :data => {:toggle => 'tab'}
+.tab-content
+  -@tabs.each_with_index do |tab, i|
+    %div{ :id => "tab-#{i}", :class => "tab-pane#{' active' if i == 0}" }
+      = form_tag( kit_generation_preview_project_task_path(@task.project, @task), :method => 'post', :id => 'kit_creation_option_form', :autocomplete => 'off', :multipart => true) do
+        =hidden_field_tag "option[tab]", i
+        =hidden_field_tag "option[FILE]"
+        -tab[:options].each do |option|
+          %ul.inline.align-top
+            -if option[:type] == 'select'
+              %li.no-list-bullet
+                %strong=option[:label]
+              %li.no-list-bullet
+                = select_tag "option[#{option[:label]}]", options_for_select(option[:options]), :include_blank => true
+            -if option[:type] == 'multiselect'
+              %li.no-list-bullet
+                %strong=option[:label]
+              %li.no-list-bullet
+                = select_tag "option[#{option[:label]}]", options_for_select(option[:options]), :multiple => true, :size => option[:options].count
+            -if option[:type] == 'text'
+              %li.no-list-bullet
+                %strong=option[:label]
+              %li.no-list-bullet
+                = text_field_tag "option[#{option[:label]}]"
+            -if option[:type] == 'textgroup'
+              %li.no-list-bullet
+                %strong=option[:label]
+              %li.no-list-bullet
+                -option[:textboxes].each do |text|
+                  .row-fluid
+                    %strong=text[:label]
+                    = text_field_tag "option[#{text[:label]}]"
+            -if option[:type] == 'readonly-list'
+              %li.no-list-bullet
+                %strong=option[:label]
+              %li.no-list-bullet
+                %ul
+                  -option[:options].each do |option|
+                    %li
+                      =option
+            -if option[:type] == 'file-upload'
+              %li.no-list-bullet
+                %strong=option[:label]
+              %li.no-list-bullet
+                %button.btn.btn-primary{:role => 'button', :data => {:toggle => 'modal', :target => '#upload_file_modal'}}
+                  Upload
+        .row-fluid=submit_tag 'Preview', :class => 'btn'
+        
+.row-fluid
+  .offset4= link_to "Return to #{@task.name}", project_task_path(@task.project, @task)
+
+.modal.hide.fade#upload_file_modal{:aria => {:hidden => "true", :labeledby => "modalHeader"}, :tabindex => "-1", :role => "dialog"}
+  .modal-header
+    %button.close{:type => 'button', :data => {:dismiss => 'modal'}, :aria => {:hidden => 'true'}} &times;
+    %h3#modalHeader Upload File
+  = form_tag( file_upload_project_task_path(@task.project, @task), :method => 'post', :autocomplete => 'off', :multipart => true) do
+    .modal-body
+      %ul
+        %li.no-list-bullet
+          %strong Add a new file
+        %li.no-list-bullet
+          = file_field_tag "new_file"
+        %li.no-list-bullet
+    .modal-footer
+      %button.btn{:data => {:dismiss => 'modal'}, :aria => {:hidden => 'true'}} Close
+      = submit_tag 'Upload', :class => 'btn btn-primary'

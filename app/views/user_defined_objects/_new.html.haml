@@ -1,0 +1,15 @@
+.modal
+  %label
+    .modal-trigger
+      %a Add Object
+  .modal-fade-screen
+    .modal-inner
+      .modal-close
+      .modal-body
+        %h1 Add Object
+        = form_for @object, :url => user_defined_objects_path do |f| 
+          %label name
+          = f.text_field :name
+          %label object
+          = f.text_area :object
+          = f.submit 'Save'

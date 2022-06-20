@@ -1,0 +1,66 @@
+-content_for :head do
+  =javascript_include_tag 'kits'
+
+%h3 Mongo Queries
+
+.row-fluid
+  %strong Query kit by ID
+  = form_tag mongo_results_kit_path(1), :autocomplete => 'off' do
+    = hidden_field_tag :type, "kit"
+    = text_field_tag :kit, nil, :style => "width: 300px;"
+    %button.btn.show-button.margin-bottom-10{:type => 'button'} Show
+  
+.row-fluid
+  %strong Query tree by ID
+  = form_tag mongo_results_kit_path(1), :autocomplete => 'off' do
+    = hidden_field_tag :type, "tree"
+    = text_field_tag :kit, nil, :style => "width: 300px;"
+    %button.btn.show-button.margin-bottom-10{:type => 'button'} Show
+
+.row-fluid
+  %strong Query text document by docid
+  = form_tag mongo_results_kit_path(1), :autocomplete => 'off' do
+    = hidden_field_tag :type, "text"
+    = text_field_tag :kit, nil, :style => "width: 300px;"
+    = submit_tag "Show", :class => 'btn margin-bottom-10'
+  
+.row-fluid
+  %strong Query journal by tree ID
+  = form_tag mongo_results_kit_path(1), :autocomplete => 'off' do
+    = hidden_field_tag :type, "journal"
+    = text_field_tag :kit, nil, :style => "width: 300px;"
+    %button.btn.show-button.margin-bottom-10{:type => 'button'} Show
+  
+.row-fluid
+  %strong Query states by kit ID
+  = form_tag mongo_results_kit_path(1), :autocomplete => 'off' do
+    = hidden_field_tag :type, "state"
+    = text_field_tag :kit, nil, :style => "width: 300px;"
+    %button.btn.show-button.margin-bottom-10{:type => 'button'} Show
+
+.row-fluid
+  .span6
+    %strong Query Kits With Arbitrary Field Values
+  .span2
+    
+.row-fluid 
+  = form_tag mongo_results_kit_path(1), :autocomplete => 'off', :id => 'arbitrary_form' do
+    = hidden_field_tag :type, "arbitrary"
+    %table.table.table-hover.table-condensed#arbitrary-table
+      %thead
+        %tr
+          %td Key
+          %td Value
+          %td
+            %button.btn.btn-success.btn-small#add_arbitrary_pair{:type => 'button'} Add pair
+      %tbody
+        =render :partial => 'arbitrary_row'
+ 
+    %button.btn.show-button{:type => 'button'} Show
+
+.row-fluid
+  %strong Query Results
+#results.well
+
+-content_for :action_specific_js do 
+  != "ldc_kits.init_mongo_query('#{j(render :partial => 'arbitrary_row')}');"

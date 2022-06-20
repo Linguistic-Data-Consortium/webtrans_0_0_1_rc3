@@ -1,0 +1,8 @@
+%tr
+  %td= link_to data_set.id, data_set
+  %td= link_to data_set.name, data_set
+  %td= link_to data_set.description, data_set
+  - if admin?
+    %td= link_to "edit", edit_data_set_path(data_set)
+    %td= link_to "delete", data_set, :method => :delete, :data => {:confirm => "This will delete the data set: #{data_set.name}, are you sure you want to do this?"}, :title => "Delete #{data_set.name}", :id => "delete_#{data_set.id}"
+

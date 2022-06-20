@@ -1,0 +1,169 @@
+%div.features
+  = f.submit "Save All Features", :id => "submit_meta", :class => 'btn', data: { confirm: "Are you sure? Will affect #{@task_ids_names.size} task(s)." } if @task_ids_names.size > 1
+  = f.submit "Save All Features", :id => "submit_meta", :class => 'btn' if @task_ids_names.size <= 1
+  / %strong Constraints (separate with spaces)
+  %div
+    Currently WebAnn has the following contraints:
+  = @kit_type.constraints.to_s
+  %div{ style: 'height: 500px; overflow: auto' }
+    - extra.each do |a|
+      %div.feature
+        %label.checkbox
+          - case a[0]
+          - when 'checkbox'
+            = check_box_tag_helper a[1]
+            = a[2]
+        = a[3]
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'controls_at_top'
+        Control buttons at top
+      Puts the control buttons (e.g. Next) at the top of the kit.
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'rtl'
+        Right to Left
+      type in this contraints for languages that read from right to left
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'restricted_event_types'
+        Restricted event types
+      restricted_event_types: this is relevant to Rich ERE which restricts event types and subtypes to a limited inventory for 2016's eval data annotation
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'specific_group'
+        Specific Group
+      specific_group: this is relevant to Rich ERE which restricts entity specificity value to a new sets of drop down menu
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'comment'
+        Comment pop up
+      comment: use this contraint if you want to allow a pop up window for each kit for annotators to leave comments
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'ban-quotes'
+        Ban quotes
+      ban-quotes: use this contraint if you want to gray out content within <quote> </quote> from an XML source document, such as DF in ERE
+    / %div.feature
+    /   %label.checkbox
+    /     = check_box_tag_helper 'orgper'
+    /     Limit to orgper
+    /   orgper: for EDL tools, limits to org and per entities and search
+    / %div.feature
+    /   %label.checkbox
+    /     = check_box_tag_helper 'gpeloc'
+    /     Limit to gpeloc
+    /   gpeloc: for EDL tools, limits to gpe and loc entities and search
+    / %div.feature
+    /   %label.checkbox
+    /     = check_box_tag_helper 'perorg'
+    /     Limit to perorg
+    /   perorg: for EDL tools, limits to per and org entities and search
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'segment_lines'
+        Segment lines
+      ?
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'para'
+        Paragraphs
+      ?
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'nu'
+        Nu
+      ?
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'arabic_text'
+        arabic_text
+      ?
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'hide_entity'
+        hide_entity
+      ?
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'hide_underlines'
+        hide_underlines
+      ?
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'reported_and_resolved_can_be_empty'
+        reported_and_resolved_can_be_empty
+      ?
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'separate_doc'
+        separate_doc
+      ?
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'hide-search'
+        hide-search
+      ?
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'force_coref_finished'
+        force_coref_finished
+      ?
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'rl'
+        rl
+      ?
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'show_coref_finished'
+        show_coref_finished
+      ?
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'deprecated'
+        Deprecated button
+      Adds a button to the control panel for marking the kit deprecated.
+    / %div.feature
+    /   %label.checkbox
+    /     = check_box_tag_helper 'all_cace_ere_features'
+    /     CACE ERE features
+    /   Adds a button to the control panel for marking the kit deprecated.
+    %div.feature
+      %div{ style: 'display: flex' }
+        %strong
+          tablecinner_limit
+        = text_field_tag_helper 'tablecinner_limit'
+      Sets length limit on table
+    %div.feature
+      %div{ style: 'display: flex' }
+        %strong
+          edl_search_parameters
+        = text_field_tag_helper 'edl_search_parameters'
+      Sets EDL search parameters:  (orgper|gpeloc) (...)
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'cace_source'
+        CACE source
+      cace source
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'manifest'
+        manifest
+      Source input is a json manifest file
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'web_audio'
+        Web Audio
+      web audio
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'audio1'
+        audio1
+      web audio
+    %div.feature
+      %label.checkbox
+        = check_box_tag_helper 'lorelei_il_nom'
+        lorelei IL nom annotation
+      changes to full entity tool for lorelei IL nom annotation
+    / # = text_field_tag "kit_type[constraints]", @kit_type.constraints.keys()

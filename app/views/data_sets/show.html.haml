@@ -1,0 +1,11 @@
+.full
+  .flexleft
+    %h1 Edit Data Set
+    = form_for(@data_set) do |f|
+      %label Name
+      = f.text_field :name
+      %label Description
+      = f.text_field :description
+      %label Spec File
+      = f.file_field :spec
+      = f.submit 'Save', :class => 'btn btn-primary'

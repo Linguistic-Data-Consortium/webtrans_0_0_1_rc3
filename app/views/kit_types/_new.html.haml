@@ -1,0 +1,50 @@
+.modal-header
+  %button.close{:type => 'button', :data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} &times;
+  %h3#modalHeader Add Kit Type
+= form_for @kit_type, :as => :kit_type do |f|
+  .modal-body
+    %div
+      %label.inline Name
+      = f.text_field :name
+    %div
+      %label.inline Namespace
+      - roots = @roots.select { |x| x[0] =~ /[A-Z]/ }
+      = select_tag "kit_type[root]", options_for_select(roots), :prompt => "Select one"
+    %div
+      %label.inline JavaScript File
+      = select_tag "kit_type[js]", options_for_select(@jsfiles), :prompt => "Select one"
+    %div
+      %label.inline Constraints Toggles
+      = f.text_field :constraints, :value => ""
+    %div
+      Currently WebAnn has the following contraints:
+    %div
+      rtl (right to left) : type in this contraints for languages that read from right to left
+    %div
+      restricted_event_types: this is relevant to Rich ERE which restricts event types and subtypes to a limited inventory for 2016's eval data annotation
+    %div
+      specific_group: this is relevant to Rich ERE which restricts entity specificity value to a new sets of drop down menu
+    %div
+      comment: use this contraint if you want to allow a pop up window for each kit for annotators to leave comments
+    %div
+      ban-quotes: use this contraint if you want to gray out content within <quote> </quote> from an XML source document, such as DF in ERE
+    %div
+      orgper: for EDL tools, limits to org and per entities and search
+    %div
+      gpeloc: for EDL tools, limits to gpe and loc entities and search
+    %div
+      If you want to add multiple constraints, type in each constraint, with white space separate each
+    %div
+      List constraints to toggle separated by spaces
+    %div
+      View and Template have been removed, because we were always using the same ones.
+    / %div
+    /   %label.inline View (usually "open")
+    /   = text_field_tag "kit_type[view]", nil, :data => {:content => 'Enter view', :"original-title" => 'view'}
+    / %div
+    /   %label.inline Template
+    /   = select_tag "kit_type[template]", options_for_select(@templates), :prompt => "Select one"
+    /%span.muted Note: empty_list helper is on the edit page
+  .modal-footer
+    %button.btn{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} Close
+    = f.submit 'Save', :class => 'btn btn-primary'

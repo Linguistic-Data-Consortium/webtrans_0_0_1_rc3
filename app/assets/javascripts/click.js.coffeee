@@ -1,0 +1,1448 @@
+# these handlers are automatically applied
+# the key becomes the selector, regardless of whether it's a node or not
+# captured at Root level
+window.ldc_click = ( ->
+    tool = null
+    ann = ldc_annotate
+    hide_show = (b, hide, show) ->
+        if b
+            $(hide).hide()
+            $(show).show()
+        else
+            $(show).hide()
+            $(hide).show()
+    init: (namespace, t, h) ->
+        that = this
+        tool = t
+        if that.handlers[namespace]
+            $.each that.handlers[namespace], (x, y) ->
+                # console.log "handle"
+                selector = ".#{x}"
+                if y.modes
+                    b = $(selector)
+                    mode1 = y.modes[0]
+                    mode2 = y.modes[1]
+                    b.addClass mode1 unless b.hasClass(mode1) or b.hasClass(mode2)
+                    $('.Root').on 'click', selector, (e) ->
+                        if $(this).hasClass(mode1) is true
+                            $(this).removeClass(mode1).addClass(mode2)
+                            y[mode2](b)
+                        else
+                            $(this).removeClass(mode2).addClass(mode1)
+                            y[mode1](b)
+                    y[mode1](b)
+                else
+                    $('.Root').on 'click', selector, y
+        $.each h, (k, v) ->
+            $.each v, (kk, vv) ->
+                ldc_nodes[k]( kk, vv )
+        ldc_keypress.init namespace, t
+        ldc_keyup.init namespace, t
+    define_mode_button: (selector, mode1, mode2) ->
+    handlers:
+        FullEntity:
+            mention: (e) ->
+                ldc_click.handlers.RichEre.mention e
+        VieFullEntity:
+            mention: (e) ->
+                ldc_click.handlers.RichEre.mention e
+        RichEre:
+            AddArg: (e) ->
+                e.stopPropagation()
+                n = $(this).parents('.EventMentionListItem').find('.EventArgList').attr('id')
+                ldc_annotate.add_list_item_to_list "##{n}"
+                ldc_annotate.submit_form()
+            ShowTriggers: (e) ->
+                $('.RelationTrigger').show()
+            reverseb: ->
+                $('.List').each (i, x) ->
+                    if $(x).css('flex-direction') is 'column-reverse'
+                        if $(x).css('display') is 'flex'
+                            $(x).css('display', 'block')
+                        else
+                            $(x).css('display', 'flex')
+            mention: (e) ->
+                if $('.MentionListItem.incomplete').length is 0 or $('.Root').hasClass('relaxed') is true
+                    id = $(this).attr('id').split('-')[1]
+                    ldc_annotate.workflow.set_current_mention2 id
+                else
+                    ldc_nodes.validate (errors) ->
+                        ldc_annotate.workflow.validate_mentions errors
+                # $('.MentionListItem').hide()
+                # $('.MentionListItem.current-mention').show()
+
+            'event-mention': (e) ->
+                if $('.EventMentionListItem.incomplete').length is 0
+                    id = $(this).attr('id').split('-')[2]
+                    ldc_annotate.workflow.set_current_event_mention2 id
+                else
+                    ldc_nodes.validate (errors) ->
+                        ldc_annotate.workflow.validate_event_mentions errors
+        SituationFrames:
+            # mention: (e) ->
+            #     if $('.MentionListItem.incomplete').length is 0 or $('.Root').hasClass('relaxed') is true
+            #         id = $(this).attr('id').split('-')[1]
+            #         tool.set_current_mention2 id
+            #     else
+            #         ldc_nodes.validate (errors) ->
+            #             tool.validate_mentions errors
+            coref_mention: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.SituationFrames.coref_mention_helper $(this)
+            coref_mention_helper: (x) ->
+                if x.hasClass 'selected'
+                    x.removeClass 'selected'
+                else
+                    x.addClass 'selected'
+                x.parents().siblings().find('.selected').removeClass 'selected'
+                $('.highlighted-ere').removeClass('highlighted-ere')
+            # entities_mention: (e) ->
+            #     ldc_click.handlers.SituationFrames.entities_mention_helper $(this)
+            # entities_mention_place: (e) ->
+            #     ldc_click.handlers.SituationFrames.entities_mention_helper $(this)
+            entities_mention_helper: (w) ->
+                if w.hasClass 'selected'
+                    w.removeClass 'selected'
+                else
+                    w.addClass 'selected'
+                    if w.attr('id') is 'em-none' or w.parents('.Place').length > 0
+                        w.siblings().removeClass('selected')
+                    else
+                        w.siblings('#em-none').removeClass('selected')
+            CreateEntityButton: (e) ->
+                if $('.coref_mention.selected').length is 0
+                    alert 'nothing selected'
+                else
+                    if $('.highlighted-ere').length is 0
+                        ann.add_message $('.EntityList').data().meta.id, 'add', null
+                        ann.submit_form()
+                    else
+                        ldc_click.handlers.SituationFrames.add_mentions $('.highlighted-ere').data().meta.id
+                        $('.highlighted-ere').removeClass('highlighted-ere')
+            add_mentions: (nid) ->
+                mentions = $('.coref_mention.selected')
+                if mentions.length > 0
+                    mentions.each (i, x) ->
+                        # $(new_node).append $(x).text()
+                        ldc_annotate.add_message $(x).attr('id').replace('coref-mention-', ''), 'change', { value: nid }
+                    ldc_annotate.submit_form()
+                    mentions.remove()
+            uncoref_mention: (e) ->
+                e.stopPropagation()
+                mention = $(this).parents('.mention').attr('id').replace('mention-','')
+                ldc_nodes.set_ref_to_node "#node-#{mention} .EntityRef", null
+            handle_mention: (e) ->
+                e.stopPropagation()
+                mention = $(this).parents('.mention').attr('id').replace('mention-','')
+                ref_id = $(this).parents('.mentions').siblings('.HandleMentionRef').data().meta.id
+                ldc_nodes.set_ref_to_node_id "#node-#{ref_id}", mention
+            ChooseEntitiesButton: (e) ->
+                $(this).hide()
+                $(this).siblings('.SetEntitiesButton').show()
+                node = $(this).parents('.ReportedSet, .ResolvedSet, .Place')
+                $('.choose').removeClass('choose')
+                $(this).parents('.entities').remove()
+                node.addClass('choose')
+                ldc_annotate.refresh_node node.data().meta.id
+            ReportedSetLabel: (e) ->
+                node.parent().toggleClass 'open'
+                node.find(':checked').each (i, x) ->
+                    a.push $(x).attr('id').replace('em-', '')
+                    # console.log a
+                    # console.log node.data().meta.id
+            SetEntitiesButton: (e) ->
+                node = $(this).parents('.Set')
+                a = []
+                node.find('.selected').each (i, x) ->
+                    a.push $(x).attr('id').replace('em-', '')
+                    console.log a
+                    console.log node.data().meta.id
+                if a.length is 0
+                    alert 'please choose something'
+                else
+                    node.removeClass('choose')
+                    $(this).hide()
+                    $(this).siblings('.ChooseEntitiesButton').show()
+                    ldc_annotate.add_message node.data().meta.id, 'change', { value: a }
+                    ldc_annotate.submit_form()
+            EditButton: (e) ->
+                hide_show true, '.EditButton', '.CorefButton'
+                # $('.CorefButton').removeClass('clicked').show()
+                # $('.EditButton').addClass('clicked').hide()
+                ldc_logic.SituationFrames.Entity()
+            CorefButton: (e) ->
+                hide_show false, '.EditButton', '.CorefButton'
+                # alert 'coref'
+                # $('.EditButton').removeClass('clicked').show()
+                # $('.CorefButton').addClass('clicked').hide()
+                ldc_logic.SituationFrames.Entity()
+            FinishCorefButton: (e) ->
+                if $('.EntityRef.empty').length > 0
+                    s = "You have unmerged mentions in the entity mention list. Are you sure these are all singletons?"
+                    $('#confirm_dialog_change .modal-body').html s
+                    s = "Yes, all unmerged mentions are singletons"
+                    $('#confirm_dialog_change .ok').html s
+                    s = "No, I still need to merge some mentions"
+                    $('#confirm_dialog_change .cancel').html s
+                    $('#confirm_dialog_change .ok').data
+                        button: this
+                        node_selector: '.CorefFinished'
+                        value:
+                            value: [ 'finished' ]
+                    # $('#confirm_dialog_change_state').prop('checked', true)
+                    ldc_nodes.open_modal '#confirm_dialog_change'
+                else
+                    ldc_nodes.change_by_selector '.CorefFinished', { value: [ 'finished' ] }
+            NoNeedsButton: (e) ->
+                $(this).hide()
+                ldc_logic.SituationFrames.next()
+            NoIssuesButton: (e) ->
+                $(this).hide()
+                ldc_logic.SituationFrames.next()
+            PasteButton: (e) ->
+                value = ldc_annotate.get_value_from_current_selection()
+                if value and value.text
+                    ldc_annotate.add_message $(this).parents('.Description').data().meta.id, 'change', { value: value.text }
+                    ldc_annotate.submit_form()
+            NextTweetButton: (e) ->
+                ldc_source.next_tweet 0
+            HandleMentionRef: (e) ->
+                $('.highlighted-ere').removeClass 'highlighted-ere'
+                $(this).parents('.EntityListItem').addClass('highlighted-ere')
+        DeftAnomalyBeliefSentiment2:
+            BeliefModeButton: (e) ->
+                hide_show true, '.BeliefModeButton', '.SentimentModeButton'
+                ldc_logic.DeftAnomalyBeliefSentiment2.Mode()
+            SentimentModeButton: (e) ->
+                hide_show false, '.BeliefModeButton', '.SentimentModeButton'
+                ldc_logic.DeftAnomalyBeliefSentiment2.Mode()
+            AddBelief: (e) ->
+                console.log this
+                # console.log $(this).siblings('.BeliefList')
+                ldc_annotate.add_message $(this).siblings('.BeliefList').data().meta.id, 'add', null
+                ldc_annotate.submit_form()
+            AddBeliefSource: (e) ->
+                ldc_annotate.add_message $(this).siblings('.BeliefSourceList').data().meta.id, 'add', null
+                ldc_annotate.submit_form()
+            AddSentimentSource: (e) ->
+                ldc_annotate.add_message $(this).siblings('.SentimentSourceList').data().meta.id, 'add', null
+                ldc_annotate.submit_form()
+        LoreleiSsaBasic:
+            NextSeg: (e) ->
+                ii = $('.Root').data().segment_i
+                i = ldc_source.next_segment true
+                if i is ii
+                    alert 'no more segments'
+                else
+                    ldc_logic.LoreleiSsaBasic.mode()
+                # ldc_click.handlers.LoreleiSsaBasic.find_helper4 i
+            PrevSeg: (e) ->
+                i = ldc_source.next_segment false
+                console.log 'mode5'
+                ldc_logic.LoreleiSsaBasic.mode()
+                # ldc_click.handlers.LoreleiSsaBasic.find_helper4 i
+            SourceDocSegNotInTargetLangButton: (e) ->
+                list = 'NotInTargetLangList'
+                text = 'NotInTargetLangRef'
+                ldc_logic.LoreleiSsaBasic.list_helper list, text
+            AnnotationPanelNoTaggablePredicatesButton: (e) ->
+                list = 'NoPredsList'
+                text = 'NoPredsRef'
+                ldc_logic.LoreleiSsaBasic.list_helper list, text
+            SourceDocInLangButton: (e) ->
+                list = 'NotInTargetLangList'
+                text = 'NotInTargetLangRef'
+                ldc_logic.LoreleiSsaBasic.list_helper2 list, text
+            TaggableButton: (e) ->
+                list = 'NoPredsList'
+                text = 'NoPredsRef'
+                ldc_logic.LoreleiSsaBasic.list_helper2 list, text
+        EntityDiscoveryLinking:
+            ResultButton: (e) ->
+                d = $(this).data()
+                text = d.text
+                text = text.replace /<a .+?>/g, ''
+                text = text.replace /<\/a>/g, ''
+                $('.Root').data().kbnode = d.subject
+                $('#mid_display').remove()
+                $('.Search').prepend("<div id=\"mid_display\">#{d.subject} has been set</div>")
+                # $('.SourceDocumentText').html "<div><button class=\"btn btn-success SelectButton\">Select</button></div>"
+                # $('.SourceDocumentText').hide()
+                $('.KbText').html text
+            SetNode: (e) ->
+                n = $('.Root').data().kbnode
+                if n
+                    id = $(this).parents('.KbLinkNodeId').data().meta.id
+                    ldc_annotate.add_message id, 'change', { value: n }
+                    ldc_annotate.submit_form()
+                else
+                    alert "select something from the kb first"
+            UnSetNode: (e) ->
+                data = $(this).parents('.KbLinkNodeId').data()
+                id = data.meta.id
+                v = data.value.value
+                unless v is null
+                    ldc_annotate.add_message id, 'change', { value: null }
+                    ldc_annotate.submit_form()
+            ShowKb: (e) ->
+                hide_show true, '.ShowKb', '.KbText, .HideKb'
+            ShowDoc: (e) ->
+                hide_show true, '.ShowDoc', '.SourceDocumentText, .HideDoc'
+            HideKb: (e) ->
+                hide_show true, '.HideKb, .KbText', '.ShowKb'
+            HideDoc: (e) ->
+                hide_show true, '.HideDoc, .SourceDocumentText', '.ShowDoc'
+        KbpAssessment2016:
+            coref_mention: (e) ->
+                if $(this).hasClass 'selected'
+                    $(this).removeClass 'selected'
+                else
+                    $(this).addClass 'selected'
+                $(this).parents().siblings().find('.selected').removeClass 'selected'
+            create_entity_button: (e) ->
+                if $('.coref_mention.selected').length is 0
+                    alert 'nothing selected'
+                else
+                    ann.add_message $('.EntityList').data().meta.id, 'add', null
+                    ann.submit_form()
+            merge_mentions_button: (e) ->
+                if $('.coref_mention.selected').length is 0
+                    alert 'nothing selected'
+                else if $('.EntityListItem.current-mention').length is 0
+                    alert 'select an entity first'
+                else
+                    id = $('.EntityListItem.current-mention').attr('id')
+                    ldc_nodes.merge_helper "##{id}"
+            uncoref_mention: (e) ->
+                e.stopPropagation()
+                mention = $(this).parents('.mention').attr('id').replace('mention-','')
+                ldc_nodes.set_ref_to_node "#node-#{mention} .EntityRef", null
+            handle_mention: (e) ->
+                e.stopPropagation()
+                mention = $(this).parents('.mention').attr('id').replace('mention-','')
+                ref_id = $(this).parents('.mentions').siblings('.HandleMentionRef').data().meta.id
+                ldc_nodes.set_ref_to_node_id "#node-#{ref_id}", mention
+            DeleteEntityButton: (e) ->
+                e.stopPropagation()
+                $(this).parents('.EntityListItem').find('.mention').each (i, x) ->
+                    mention = $(x).attr('id').replace('mention-','')
+                    ldc_nodes.set_ref_to_node_light "#node-#{mention} .EntityRef", null
+                node_selector = '.EntityListItem'
+                ldc_annotate.add_message $(this).parents(node_selector).data().meta.id, 'delete', null
+                ldc_annotate.submit_form()
+        XDocCoref:
+            CandidateListItem: (e) ->
+                d = $(this).data()
+                # ldc_annotate.add_message d.meta.id, 'delete', null
+                # ldc_annotate.submit_form()
+                id = $(this).find('.Candidate').data().value['value']
+                ldc_click.handlers.XDocCoref.draw_hopper '.candidate', id
+                # $('.same_button, .different_button, .bad_button').hide()
+                ldc_nodes.set_current_mention d.meta.id, false, '.CandidateList', '.CandidateListItem', null
+                $('.highlighted-ere').removeClass 'highlighted-ere'
+            trigger: (e) ->
+                a = $(this).attr('id').split('|')
+                eid = a[0]
+                mid = a[1]
+                mention = $('.Root').data().events[eid].mentions[mid]
+                if $(this).parents('.seed').length is 1
+                    sel = "#node-4"
+                else
+                    sel = "#node-5"
+                x = $("#{sel}-char-#{mention.beg}").offset()
+                ldc_nodes.scroll_document_by_offset sel, x
+            draw_hopper: (sel, id) ->
+                event = $('.Root').data().events[id]
+                console.log event
+                a = []
+                # a.push [ 'div', "Hopper #{id}" ]
+                uid = null
+                src = null
+                first = true
+                $.each event.mentions, (ii, mention) ->
+                    if uid is null
+                        uid = mention.source
+                        display = if sel is '.seed' then '.SeedDoc' else '.CandidateDoc'
+                        ldc_source.set_current_display display
+                        source = { type: 'document', uid: uid, id: uid, docid: uid }
+                        ldc_source.show_source source
+                    # a.push [ 'div', 'class', 'event_mention', "Event Mention #{ii}" ]
+                    if first is true or mention.type is 'contact' or mention.type is 'transaction'
+                        a.push [ 'div', 'class', 'type_subtype', "Type #{mention.type}, Subtype #{mention.subtype}" ]
+                    a.push [ 'div', 'id', "#{id}|#{ii}", 'class', 'trigger', "trigger #{mention.trigger}" ]
+                    a.push [ 'div', 'class', 'realis', "realis #{mention.realis}" ]
+                    ldc_nodes.set_char_properties mention, 'yellow', 'highlighted-mentionn'
+                    $.each mention.args, (iii, arg) ->
+                        a.push [ 'div', 'class', 'arg_role', "arg #{arg.role}" ]
+                        a.push [ 'div', 'class', 'arg_text', "arg #{arg.text}" ]
+                        if arg.filler is true
+                            ldc_nodes.set_char_properties arg.source, 'greenyellow', 'highlighted-mentionn'
+                        else
+                            ldc_nodes.set_char_properties arg.source, 'aqua', 'highlighted-mentionn'
+                            $.each arg.coref, (iiii, arg) ->
+                                # a.push [ 'div', "arg #{arg.text}" ]
+                                switch iii
+                                    when 0
+                                        ldc_nodes.set_char_properties arg.source, 'lightblue', 'highlighted-mentionn'
+                                    when 1
+                                        ldc_nodes.set_char_properties arg.source, 'lightskyblue', 'highlighted-mentionn'
+                                    when 2
+                                        ldc_nodes.set_char_properties arg.source, 'aquamarine', 'highlighted-mentionn'
+                                    when 3
+                                        ldc_nodes.set_char_properties arg.source, 'paleturquoise', 'highlighted-mentionn'
+                    first = false
+                $(sel).html ldc_nodes.array2html [ 'div', 'class', 'hopper', a ]
+            first_undone_button: ->
+                $('.current-mention').removeClass 'current-mention'
+                h = {}
+                $('.Candidate').each (i, x) ->
+                    h[$(x).data().value['value']] = true
+                found = false
+                events = $('.Root').data().events
+                seed_id = $('.Root').data().seed_id
+                $.each events, (k, v) ->
+                    found = k if found is false and (not h[k]) and (k isnt seed_id)
+                if found
+                    $('.candidate').data().event = found
+                    ldc_click.handlers.XDocCoref.draw_hopper '.candidate', found
+                else
+                    alert 'no more'
+            same_button: (e) ->
+                ldc_click.handlers.XDocCoref.same_different 'same', 'CorefStatus'
+            different_button: (e) ->
+                ldc_click.handlers.XDocCoref.same_different 'different', 'CorefStatus'
+            bad_button: (e) ->
+                ldc_click.handlers.XDocCoref.same_different [ 'bad' ], 'BadCandidate'
+            next_candidate_button: (e) ->
+                ldc_click.handlers.XDocCoref.first_undone_button()
+            same_different: (x, y) ->
+                if $('.current-mention').length is 0
+                    ldc_annotate.add_list_item_to_list ".CandidateList"
+                    ldc_annotate.add_message "new.Candidate", 'change', { value: $('.candidate').data().event }
+                    ldc_annotate.add_message "new.#{y}", 'change', { value: x }
+                    ldc_annotate.submit_form()
+                else
+                    ldc_annotate.add_message $(".current-mention .#{y}").data().meta.id, 'change', { value: x }
+                    ldc_annotate.submit_form()
+        SituationFramesSentiment:
+            select_frame2: (label, frames) ->
+                x = $(label).siblings('.SentimentLinkFrame').data().value.value[0]
+                console.log 'ref'
+                console.log x
+                ldc_click.handlers.SituationFramesSentiment.select_frame_helper x, frames
+            select_frame: (frame, frames) ->
+                id = $(frame).attr('id')
+                ldc_click.handlers.SituationFramesSentiment.select_frame_helper id, frames
+            select_frame_helper: (id, frames) ->
+                a = [ ]
+                $.each frames[id], (k, v) ->
+                    a.push [ 'div', [
+                            [ 'span', k+':' ]
+                            [ 'span', v ]
+                        ] ]
+                if $('.Root').data().separate_document_window
+                    separate_document_window = $('.Root').data().separate_document_window
+                else
+                    separate_document_window = window.open('', "webann_document_window", "toolbar=no,menubar=no,status=no,width=750,height=500")
+                    $('.Root').data().separate_document_window = separate_document_window
+                separate_document_window.document.open()
+                separate_document_window.document.write('<style> .addedp { margin: 10px; } </style>');
+                separate_document_window.document.write ldc_nodes.array2html [ 'div', 'class', 'selected_frame', a ]
+                separate_document_window.document.close()
+                $('.Root').data().frame_id = id
+                console.log frames[id]
+            SentimentLinkFrame: (e) ->
+                if $('.Root').data().frame_id
+                    ldc_annotate.add_message $(e).data().meta.id, 'change', { value: [ $('.Root').data().frame_id ] }
+                    ldc_annotate.submit_form()
+                else
+                    alert 'select a frame first'
+            SentimentLinkLabelx: (e) ->
+                alert 'here'
+        Cmn2QualityAudit:
+            Instruction3Label: (e) ->
+                $('.Waveform').show()
+            play_segment: (e) ->
+                nn = $(this).parents('.Timestamps')[0]
+                data = $(nn).data()
+                # data.value.end = data.value.beg + 1
+                console.log data
+                ldc_source.show_and_play_node2 data, false, ldc_click.handlers.Cmn2QualityAudit.play_callback
+            play_callback: (nn, playing) ->
+                round_to_3_places = (num) -> Math.round( num * 1000 ) / 1000
+                if nn isnt null
+                    tt = round_to_3_places nn.value.play_head - nn.value.beg
+                    $("#node-#{nn.meta.id} .playback_time").text tt
+                    if playing is false
+                        console.log 'current'
+                        console.log nn
+                        console.log nn.value.wave_buffer
+                        # value = that.current_audio_node.value
+                        # value.play_head = value.end
+                        ldc_annotate.add_message nn.meta.id, 'change', nn.value
+                        ldc_annotate.submit_form()
+                        $('.play_segment').show()
+                        $("#node-#{nn.meta.id} .play_segment").removeAttr('disabled', 'disabled')
+        VastSadAudit2:
+            Instruction3Label: (e) ->
+                $('.Waveform').show()
+            play_segment: (e) ->
+                nn = $(this).parents('.Timestamps')[0]
+                data = $(nn).data()
+                # data.value.end = data.value.beg + 1
+                console.log data
+                ldc_source.show_and_play_node2 data, false, ldc_click.handlers.Cmn2QualityAudit.play_callback
+            play_callback: (nn, playing) ->
+                round_to_3_places = (num) -> Math.round( num * 1000 ) / 1000
+                if nn isnt null
+                    tt = round_to_3_places nn.value.play_head - nn.value.beg
+                    $("#node-#{nn.meta.id} .playback_time").text tt
+                    if playing is false
+                        console.log 'current'
+                        console.log nn
+                        console.log nn.value.wave_buffer
+                        # value = that.current_audio_node.value
+                        # value.play_head = value.end
+                        ldc_annotate.add_message nn.meta.id, 'change', nn.value
+                        ldc_annotate.submit_form()
+                        $('.play_segment').show()
+        Cmn2SpeakerAudit:
+            Instruction3Label: (e) ->
+                $('.Waveform').show()
+            play_segment: (e) ->
+                nn = $(this).parents('.Timestamps')[0]
+                data = $(nn).data()
+                ldc_source.show_and_play_node2 data, false, ldc_click.handlers.Cmn2QualityAudit.play_callback
+            stop_segment: (e) ->
+                ldc_source.stop_playing()
+        LoreleiEdl:
+            ReviewButton: (e) ->
+                $(this).toggleClass('reviewed')
+                if $(this).hasClass('reviewed')
+                    $.each $('.LinkListItem'), ->
+                        uid = $(this).find('.KBRef').find('.ref-text').text()
+                        console.log(uid)
+                        kbsearch.getDetailedEntry(uid, this)
+                    $(this).text("Back to Search")
+                    $('#search').hide()
+                    $('.Right').hide()
+                    $('.LinkButton').hide()
+                else
+                    $('#search').show()
+                    $('.Right').show()
+                    $('.LinkButton').show()
+                    $(this).text("Review Annotations for Selected Entity")
+                $('.LinkListItem, .BadListItem, .MissingListItem').removeClass('SelectedEntityListItem')
+                $.each $('.EntityRef'), ->
+                    if $(this).data().value.value is $('.selectedEnt').attr('id')
+                        $(this).parent('div').addClass('SelectedEntityListItem')
+                hide_show $(this).hasClass('reviewed'), '', '.SelectedEntityListItem'
+
+            hide_all: ->
+                $('.LinkListItem, .BadListItem, .MissingListItem').removeClass('SelectedEntityListItem')
+                $('.LinkListItem, .BadListItem, .MissingListItem').hide()
+            LinkButton: (e) ->
+                if $('.DetailedTable').length and $('.selectedEnt').length
+                    flagged = false
+                    $('.LinkListItem').each ->
+                        console.log($(this))
+                        if ($(this).find('.KBRef .ref-text').text() is $('.selectedSearchRow').attr('id')) and ($(this).find('.EntityRef .ref-text').text() is $('.selectedEnt').attr('id'))
+                            console.log("KBref: #{$(this).find('.KBRef .ref-text').text()}, id: #{$('.selectedSearchRow').attr('id')}, EntityRef: #{$(this).find('.EntityRef .ref-text').text()}, selectedId: #{$('.selectedEnt').attr('id')}")
+                            flagged = true
+                    if $('.selectedEnt .entStatus').text().match(/MISSING|BAD/)
+                        console.log("Error: Cannot create link with BAD or MISSING present.")
+                    else if flagged
+                        console.log("Error: Annotation already exists.")
+                    else
+                        ldc_click.handlers.LoreleiEdl.hide_all()
+                        ldc_annotate.add_list_item_to_list ".LinkList"
+                        ldc_annotate.add_message "new.EntityRef", 'change', { value: $('.selectedEnt').attr('id') }
+                        ldc_annotate.add_message "new.KBRef", 'change', { value: $('.selectedSearchRow').attr('id') }
+                        ldc_annotate.submit_form()
+                        $(document).ajaxStop ->
+                            ldc_refresh_node.LoreleiEdl.KBRef()
+                            ldc_refresh_node.LoreleiEdl.EntityRef()
+                            ldc_refresh_node.LoreleiEdl.LinkListItem()
+                            ldc_click.handlers.LoreleiEdl.SetYN()
+            BadButton: (x, y) ->
+                this_entity_id = $('.selectedEnt').attr('id')
+                if (not $('.selectedEnt .entStatus').text().match(/MISSING|BAD/))
+                    node_selector = '.LinkListItem'
+                    $.each $(node_selector), ->
+                        if $(this).find('.EntityRef .ref-text').text() is $('.selectedEnt').attr('id')
+                            ldc_annotate.add_message $(this).data().meta.id, 'delete', null
+                    ldc_click.handlers.LoreleiEdl.hide_all()
+                    ldc_annotate.add_list_item_to_list ".BadList"
+                    ldc_annotate.add_message "new.EntityRef", 'change', { value: $('.selectedEnt').attr('id') }
+                    ldc_annotate.submit_form()
+                    $('.selectedEnt .entStatus').html 'BAD'
+            MissingButton: (x, y) ->
+                this_entity_id = $('.selectedEnt').attr('id')
+                if (not $('.selectedEnt .entStatus').text().match(/MISSING|BAD/))
+                    node_selector = '.LinkListItem'
+                    $.each $(node_selector), ->
+                        if $(this).find('.EntityRef .ref-text').text() is $('.selectedEnt').attr('id')
+                            ldc_annotate.add_message $(this).data().meta.id, 'delete', null
+                    ldc_click.handlers.LoreleiEdl.hide_all()
+                    ldc_annotate.add_list_item_to_list ".MissingList"
+                    ldc_annotate.add_message "new.EntityRef", 'change', { value: $('.selectedEnt').attr('id') }
+                    ldc_annotate.submit_form()
+                    $('.selectedEnt .entStatus').html 'MISSING'
+            EntityRow: (e) ->
+                kbsearch.getDetailedEntry($(this).attr('id'), '.DetailedEntryLabel')
+            nonselectedSearchRow: (e) ->
+                dataTable = $('#search_results').dataTable()
+                for x in dataTable.fnGetNodes()
+                    x.className = x.className.replace(' selectedSearchRow', ' nonselectedSearchRow')
+                $(this).removeClass('nonselectedSearchRow')
+                $(this).addClass('selectedSearchRow')
+            nonselectedEnt: (e) ->
+                $('#search').show()
+                $('.Right').show()
+                $('.LinkButton').show()
+                $('.ReviewButton').removeClass('reviewed')
+                $('.ReviewButton').text("Review Annotations for Selected Entity")
+                ldc_click.handlers.LoreleiEdl.hide_all()
+                $('.selectedEnt').addClass('nonselectedEnt')
+                $('.selectedEnt').removeClass('selectedEnt')
+                $(this).removeClass('nonselectedEnt')
+                $(this).addClass('selectedEnt')
+                console.log(this)
+                if $($(this).children()[1]).text() is "ORG" and $('.Root').hasClass('per')
+                    console.log("changing to org")
+                    kbsearch.init('org')
+                    $('.Root').addClass('org')
+                    $('.Root').removeClass('per')
+                    $('.DetailedTable').remove()
+                else if $($(this).children()[1]).text() is "PER" and $('.Root').hasClass('org')
+                    console.log("changing to per")
+                    kbsearch.init('per')
+                    $('.Root').addClass('per')
+                    $('.Root').removeClass('org')
+                    $('.DetailedTable').remove()
+                ldc_click.handlers.LoreleiEdl.SetYN()
+                kbsearch.init_index()
+            SetYN: ->
+                current_ent = $('.selectedEnt').attr('id')
+                kb_links_this_ent = []
+                $.each $('.EntityRef'), ->
+                    if $(this).data().value.value is $('.selectedEnt').attr('id') and $(this).siblings('.KBRef').length
+                        kb_links_this_ent.push $(this).siblings('.KBRef').data().value.value
+                $.each $('.EntityRow'), ->
+                    if $(this).attr('id') in kb_links_this_ent
+                        $(this).find('td').last().text('Y')
+                    else
+                        $(this).find('td').last().text('N')
+            PERButton: (e) ->
+                if not $('.Root').hasClass('per')
+                    kbsearch.init('per')
+                    $('.Root').addClass('per')
+                    $('.Root').removeClass('org')
+            ORGButton: (e) ->
+                if not $('.Root').hasClass('org')
+                    kbsearch.init('org')
+                    $('.Root').addClass('org')
+                    $('.Root').removeClass('per')
+            DeleteLinkButton: (e) ->
+                e.stopPropagation()
+                node_selector = '.LinkListItem'
+                ldc_annotate.add_message $(this).parents(node_selector).data().meta.id, 'delete', null
+                ldc_annotate.submit_form()
+                ldc_refresh_node.LoreleiEdl.EntityRef()
+                ldc_click.handlers.LoreleiEdl.SetYN()
+                kbsearch.init_index()
+            DeleteBadButton: (e) ->
+                e.stopPropagation()
+                node_selector = '.BadListItem'
+                ldc_annotate.add_message $(this).parents(node_selector).data().meta.id, 'delete', null
+                ldc_annotate.submit_form()
+                ldc_refresh_node.LoreleiEdl.EntityRef()
+            DeleteMissingButton: (e) ->
+                e.stopPropagation()
+                node_selector = '.MissingListItem'
+                ldc_annotate.add_message $(this).parents(node_selector).data().meta.id, 'delete', null
+                ldc_annotate.submit_form()
+                ldc_refresh_node.LoreleiEdl.EntityRef()
+        KbpAssessment2017:
+            coref_mention: (e) ->
+                if $(this).hasClass 'selected'
+                    $(this).removeClass 'selected'
+                else
+                    $(this).addClass 'selected'
+                $(this).parents().siblings().find('.selected').removeClass 'selected'
+            create_entity_button: (e) ->
+                if $('.coref_mention.selected').length is 0
+                    alert 'nothing selected'
+                else
+                    ann.add_message $('.EntityList').data().meta.id, 'add', null
+                    ann.submit_form()
+            merge_mentions_button: (e) ->
+                if $('.coref_mention.selected').length is 0
+                    alert 'nothing selected'
+                else if $('.EntityListItem.current-mention').length is 0
+                    alert 'select an entity first'
+                else
+                    id = $('.EntityListItem.current-mention').attr('id')
+                    ldc_nodes.merge_helper "##{id}"
+            uncoref_mention: (e) ->
+                e.stopPropagation()
+                mention = $(this).parents('.mention').attr('id').replace('mention-','')
+                ldc_nodes.set_ref_to_node "#node-#{mention} .EntityRef", null
+            handle_mention: (e) ->
+                e.stopPropagation()
+                mention = $(this).parents('.mention').attr('id').replace('mention-','')
+                ref_id = $(this).parents('.mentions').siblings('.HandleMentionRef').data().meta.id
+                ldc_nodes.set_ref_to_node_id "#node-#{ref_id}", mention
+            DeleteEntityButton: (e) ->
+                e.stopPropagation()
+                $(this).parents('.EntityListItem').find('.mention').each (i, x) ->
+                    mention = $(x).attr('id').replace('mention-','')
+                    ldc_nodes.set_ref_to_node_light "#node-#{mention} .EntityRef", null
+                node_selector = '.EntityListItem'
+                ldc_annotate.add_message $(this).parents(node_selector).data().meta.id, 'delete', null
+                ldc_annotate.submit_form()
+            ResponseID: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.KbpAssessment2017.show_helper $(this).data().value.value
+            show_helper: (id) ->
+                mentions = $('.Root').data().obj.mentions
+                filler = mentions[id].filler
+                console.log filler
+                ldc_source.show_source filler
+                # sid = $('.current_display').data().meta.id;
+                # ldc_source.select_text_by_chars( sid, filler.beg, filler.end )
+                $.each mentions[id].justifications, (i, x) ->
+                    ldc_nodes.set_char_properties x, 'lightblue', 'highlighted-mentionn'
+                    # console.log "SET"
+                    # console.log x
+                ldc_nodes.set_char_properties filler, 'yellow', 'highlighted-mentionn'
+            show_mention2: (e) ->
+                e.stopPropagation()
+                n = $(this).parents('.coref_mention').attr('id').replace('coref-mention-','')
+                ldc_click.handlers.KbpAssessment2017.show_helper $("#node-#{n}").siblings('.ResponseID').data().value.value
+            show_entity_mention2: (e) ->
+                e.stopPropagation()
+                n = $(this).parents('.mention').attr('id').replace('mention-','')
+                ldc_click.handlers.KbpAssessment2017.show_helper $("#node-#{n}").find('.ResponseID').data().value.value
+        CaceTopicDev:
+            InfoElementDeleteButton: (e) ->
+                e.stopPropagation()
+                ldc_nodes.delete_via_selector_confirm '.currentt'
+        CaceDataScouting:
+            InfoElementSelectionTablePlaceholderLabel: (e) ->
+                e.stopPropagation()
+                row = $(e.target).parent('tr')
+                return unless row and row.attr('class')
+                if row.attr('class').match(/selectedRow/)
+                    node_selector = '.InfoElementSelectionListItem'
+                    type = row.find('td').first().text()
+                    handle = row.find('td').last().text()
+                    for node in $(node_selector)
+                        console.log $(node_selector)
+                        if $(node).find('.InfoElementHandle').data().value.value is handle and $(node).find('.InfoElementType').data().value.value is type
+                            ldc_annotate.add_message $(node).attr('id').replace(/node-/, ''), 'delete', null
+                            ldc_annotate.submit_form()
+                            row.removeClass('selectedRow')
+                else if row.attr('class') in ['even', 'odd']
+                    ldc_annotate.add_list_item_to_list ".InfoElementSelectionList"
+                    ldc_annotate.add_message "new.InfoElementType", 'change', { value: row.find('td').first().text() }
+                    ldc_annotate.add_message "new.InfoElementHandle", 'change', { value: row.find('td').last().text() }
+                    ldc_annotate.submit_form()
+                    $('.dataTables_scrollBody').css("overflow", "")
+                    row.addClass('selectedRow')
+            DeleteNewInfoElement: (e) ->
+                e.stopPropagation()
+                ldc_annotate.add_message $(this).parents('.ListItem').data().meta.id, 'delete', null
+                ldc_annotate.submit_form()
+            TopicLinkPlaceholderLabel: (e) ->
+                e.stopPropagation()
+                obj = $('.Root').data().obj
+                uid = obj.source.uid
+                uid = uid ? uid : 'TT2'
+                $.get "/reports/5?uid=#{uid}", (data) ->
+                    ldc_click.handlers.CaceDataScouting.helper1 data
+                , 'json'
+            helper1: (data) ->
+                a = [ 'div', [] ]
+                if data.rows and data.rows.length > 0
+                    row = data.rows[0]
+                    $.each data.header, (i, x) ->
+                        a[1].push [ 'div', "#{x}: #{row[i]}" ]
+                ldc_click.handlers.CaceDataScouting.helper2 a
+            helper2: (a) ->
+                obj = $('.Root').data().obj
+                uid = obj.source.uid
+                uid = uid ? uid : 'TT2'
+                $.get "/reports/6?uid=#{uid}", (data) ->
+                    ldc_click.handlers.CaceDataScouting.helper3 data, a
+                , 'json'
+            helper3: (data, a) ->
+                if data.rows and data.rows.length > 0
+                    b = [ 'div', [] ]
+                    a[1].push b
+                    $.each data.rows, (ii, row) ->
+                        # b[1].push [ 'div', "row #{ii+1}" ]
+                        b[1].push [ 'br', '' ]
+                        $.each data.header, (i, x) ->
+                            b[1].push [ 'div', "#{x}: #{row[i]}" ]
+                ldc_click.handlers.CaceDataScouting.helper4 a
+            helper4: (a) ->
+                s = ldc_nodes.array2html a
+                separate_document_window = window.open('', "_blank", "toolbar=no,menubar=no,status=no,width=750,height=500");
+                separate_document_window.document.open();
+                separate_document_window.document.write('<style> .addedp { margin: 10px; } </style>');
+                separate_document_window.document.write('<div class="Document Node"><p>')
+                separate_document_window.document.write(s);
+                separate_document_window.document.write('</p></div>');
+                separate_document_window.document.close();
+            AddNewInfoElementButton: (e) ->
+                e.stopPropagation()
+                obj = $('.Root').data().obj
+                if obj.other_task_user_id
+                    window.open("/workflows/workflows/37/work/#{obj.other_task_user_id}", "_blank")
+                else
+                    alert 'workflow error'
+        CaceAnnotationEre:
+            EntityElementMedia: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.helper1 $(this).data(), this
+            RelationElementMedia: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.helper1 $(this).data(), this
+            EventElementMedia: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.helper1 $(this).data(), this
+            helper1: (node, that) ->
+                return if $('.selected_media').length is 0
+                return if $(that).hasClass('dis')
+                if $('.selected_media.Text').length is 1
+                    alert 'Only non-text elements can be annotated in this field.'
+                    return
+                uid = $('.selected_media').attr('id').split('-')[1]
+                s = "Are you sure you want to change the document element in this mention?"
+                $('#confirm_dialog_change .modal-body').html s
+                s = "Yes"
+                $('#confirm_dialog_change .ok').html s
+                s = "No"
+                $('#confirm_dialog_change .cancel').html s
+                $('#confirm_dialog_change .ok').data
+                    button: that
+                    node_selector: "#node-#{node.meta.id}"
+                    value:
+                        docid: uid
+                ldc_nodes.open_modal '#confirm_dialog_change'
+            selectable_media: (e) ->
+                # $('.selected_media').css('background-color', 'white')
+                $('.selected_media').removeClass('selected_media')
+                $(this).addClass 'selected_media'
+                # $('.selected_media').css('background-color', '#ffec80')
+            EntityNotInTableButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.nil_helper this, 'entity', null, null
+            RelationNotInTableButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.nil_helper this, 'relation', null, null
+            EventNotInTableButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.nil_helper this, 'event', null, null
+            nil_helper: (b, type, kbid, handle) ->
+                id = $(b).parents('.ListItem').data().meta.id
+                type2 = ldc_logic.CaceAnnotationEre.type_helper type
+                handle = $("#node-#{id}").find(".#{type2}ElementHandleNontext").data().value unless handle
+                $(".#{type2}NodesList").data().ref_iid = id
+                $(".#{type2}NodesList").data().ref_kbid = kbid
+                $(".#{type2}NodesList").data().ref_handle = handle
+                ldc_annotate.add_message $(".#{type2}NodesList").data().meta.id, 'add', null
+                ldc_annotate.submit_form()
+                # nid = $(b).parents('.ListItem').find('.EntityLinkRef, .RelationLinkRef, .EventLinkRef').data().meta.id
+                # ldc_nodes.set_ref_to_node_id "#node-#{nid}", id
+            AddEntityLinkButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.link_helper this, 'entity', false
+            AddRelationLinkButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.link_helper this, 'relation', false
+            AddEventLinkButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.link_helper this, 'event', false
+            RelationSlotSelectButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.link_helper this, null, true
+            EventSlotEntitySelectButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.link_helper this, null, true
+            link_helper: (b, type, slot) ->
+                a = $('.selected')
+                if a.length is 0
+                    alert 'select a kb node'
+                else if a.length > 1
+                    alert 'select a single kb node'
+                else
+                    typ = $(a.first().find('td')[3]).text()
+                    if slot
+                        ldc_click.handlers.CaceAnnotationEre.link_helper2 b, type, slot, a
+                    else
+                        if type is 'entity'
+                            sel = '.EntitiesListItem'
+                            sel = '.RelationsListItem' if slot is 'relation'
+                            sel = '.EventsListItem' if slot is 'event'
+                            if $(b).parents(sel).find('.EntityTypeMenu').data().value.value in [ 'per', 'org', 'gpe', 'loc', 'fac' ]
+                                if typ in [ 'entity', 'Entity' ]
+                                    ldc_click.handlers.CaceAnnotationEre.link_helper2 b, type, slot, a
+                                else
+                                    alert "Please link this entity mention to a row in the table whose category is Entity"
+                            else if $(b).parents(sel).find('.EntityTypeMenu').data().value.value in [ 'wea', 'veh', 'com', 'sid', 'val', 'tme', 'mon', 'ttl', 'crm', 'sen', 'url' ]
+                                if typ in [ 'filler', 'Filler' ]
+                                    ldc_click.handlers.CaceAnnotationEre.link_helper2 b, type, slot, a
+                                else
+                                    alert "Please link this filler mention to a row in the table whose category is Filler"
+                        else if type is 'relation'
+                            if typ in [ 'relation', 'Relation' ]
+                                ldc_click.handlers.CaceAnnotationEre.link_helper2 b, type, slot, a
+                            else
+                                alert "Please link this relation mention to a row in the table whose category is Relation"
+                        else if type is 'event'
+                            if typ in [ 'event', 'Event' ]
+                                ldc_click.handlers.CaceAnnotationEre.link_helper2 b, type, slot, a
+                            else
+                                alert "Please link this event mention to a row in the table whose category is Event"
+            link_helper2: (b, type, slot, a) ->
+                id = a.first().attr('id').split('-')[1]
+                iid = a.first().find('td').first().text()
+                if iid is '-'
+                    if slot
+                        alert "Please link this slot to a row in the table that is linked to at least one mention from the document."
+                    else
+                        ldc_click.handlers.CaceAnnotationEre.nil_helper b, type, { value: id }, { value: $('.Root').data().kb[id] }
+                else
+                    nnid = $(b).parents('.ListItem').data().meta.id
+                    if slot
+                        s = '.RelationSlotLinkRef, .EventSlotEntityLinkRef'
+                    else
+                        s = '.EntityLinkRef, .RelationLinkRef, .EventLinkRef'
+                    nid = $("#node-#{nnid}").find(s).data().meta.id
+                    console.log(b);
+                    console.log(nnid);
+                    console.log(nid);
+                    ldc_nodes.set_ref_to_node_id "#node-#{nid}", iid
+            LiveWebButton: (e) ->
+                e.stopPropagation()
+                url = $('.Root').data().url
+                if url
+                    window.open(url, "_blank")
+                else
+                    alert 'no url found'
+            ScreenshotButton: ->
+                uid = $('.Root').data().screenshot
+                if uid
+                    url = "/sources/media?uid=#{uid}"
+                    window.open(url, "_blank", 'location,status,scrollbars,resizable,width=800, height=800')
+                else
+                    alert 'no screenshot found'
+            CardButton: ->
+                if $('.Root').hasClass 'bcv'
+                    $('.Root').removeClass 'bcv'
+                    $('.view').hide()
+                    # $('.CardLabel, .EntityVerificationButton').hide()
+                    $('.Tabs').show()
+                    $('.EntityNodesList').hide()
+                    $('.ElementListTable').DataTable().search("").draw()
+                 else
+                    $('.Root').addClass 'bcv'
+                    $('.view').show()
+                    ldc_annotate.workflow.selected_entity_helper()
+                    # $('.CardLabel, .EntityVerificationButton').show()
+                    $('.Tabs').hide()
+                    $('.EntityNodesList').show()
+                    # $('.EntityNodesList').insertAfter('.CardButton')
+                    $('.ElementListTable').DataTable().search("entity|filler", true, false).draw()
+            media_uid: (e) ->
+                $('.selected-media').removeClass 'selected-media'
+                $("#node-#{$(this).text()}").addClass 'selected-media'
+            bcv: (e) ->
+                $('.Root').toggleClass 'bcv'
+                b = $('.Root').hasClass('bcv')
+                hide_show b, '.Tabs', '.BaseballCardView'
+                if b
+                    $('.ElementListTable').DataTable().search("entity").draw()
+
+                else
+                    $('.ElementListTable').DataTable().search("").draw()
+            EntityVerificationButton: (e) ->
+                e.stopPropagation()
+                id = $(this).data().eid
+                if id
+                    kbid = $("#node-#{id}").find('.KBID').data().value.value
+                    t = $(".ElementListTable").DataTable()
+                    sel = "#node-#{kbid}-table"
+                    t.cell(sel,"verified:name").data('Y').draw()
+                    nid = $("#node-#{id}").find('.EntityVerificationStatus').data().meta.id
+                    ldc_annotate.add_message nid, 'change', { value: 'Y' }
+                    ldc_annotate.submit_form()
+            fix1: (e) ->
+                handle = $(this).siblings('.Entry').data().value.value
+                if handle is null
+                    alert 'the description is empty'
+                else
+                    iid = $(this).data().iid
+                    ldc_annotate.add_message iid, 'change', { value: handle }
+                    ldc_annotate.submit_form()
+                    $('.fix1').remove()
+            EditEntityButton: (e) ->
+                kbid = $(this).attr('data-entity')
+                if not kbid
+                  console.error("no kbid found for EditEntityButton")
+                  console.error($(this))
+                else if $(".EntityLinkRef:contains('linked to #{kbid}')" ).length > 0
+                  target = $(".EntityLinkRef:contains('linked to #{kbid}')" ).parent('.EntitiesListItem')
+                else
+                  console.error("no linked ref for EditEntityButton")
+                  console.error(kbid)
+                $('.CardButton').click()
+                $('a:contains("Entities")').click();
+                if target
+                  ldc_nodes.scroll_and_highlight(target, 'red')
+            EditRelationButton: (e) ->
+                sel = $(this).attr('data-edit')
+                $('.CardButton').click()
+                $('a:contains("Relations")').click();
+                ldc_nodes.scroll_and_highlight(sel, 'red')
+            EditEventButton: (e) ->
+                sel = $(this).attr('data-edit')
+                $('.CardButton').click()
+                $('a:contains("Events")').click();
+                ldc_nodes.scroll_and_highlight(sel, 'red')
+            MediaEyeball: ->
+                $('a:contains("Split View")').click()
+                media_element = $(this).siblings('.Media').text()
+                node = $("#node-" + media_element)
+                console.error "couldn't find node #{media_element} in kit #{$('.Root').data().obj._id}" if node.length is 0
+                node.addClass('tempHighlight')
+                node[0].scrollIntoView()
+                setTimeout () ->
+                    node.removeClass('tempHighlight')
+                ,3000
+            MediaDelete: ->
+                media_element = $(this).parents('.ListItem').find('.Media').data().meta.id
+                ldc_annotate.add_message media_element, 'change', { value: null }
+                ldc_annotate.submit_form()
+            HypothesisJudgment: (e) ->
+              $(this).siblings('input').removeAttr("checked")
+              $(this).attr("checked", "checked")
+            SaveHypothesesJudgments: (e) ->
+                e.stopPropagation()
+                attr = $(this).attr('disabled');
+                if typeof attr isnt undefined and attr isnt false
+                    $(this).attr("disabled", "disabled")
+                    console.log("here")
+                    console.log($(this).parent().find('.HypothesisJudgment[checked=checked]').length)
+                    any = false
+                    for node in $(this).parent().find('.HypothesisJudgment[checked=checked]')
+                        that = node
+                        cur_ent = $('.Root').data().selected_entity
+                        id = $(that).attr('id').split('|') # Relation/Entity, topic id, topic judgment
+                        type = id[1]
+                        topic_id = id[2]
+                        judgment = id[3]
+                        # console.log("HYPOTH JUDGMENT ID: " + id);
+                        root_list_id = $(that).parent().parent().attr('id').split('-')[1]
+                        # console.log("root_list_id: " + root_list_id);
+                        list_id = $('#node-' + root_list_id).data().meta.parent["#{type}SlotList"].meta.id
+                        # console.log("list id: " + list_id);
+                        found = false
+                        for subnode in $('#node-' + list_id).children(".#{type}SlotListItem")
+                            # console.log("there");
+                            if type is 'Event'
+                                sub = "#{type}SlotEntityLinkRef"
+                            else
+                                sub = "#{type}SlotLinkRef"
+                            if $(subnode).data()[sub].value.value is cur_ent
+                                # console.log("here");
+                                slot_id = $(subnode).attr('id')
+                                # console.log(slot_id);
+                        console.log("this slot id: " + slot_id);
+                        node_list_id = $('#' + slot_id).children(".#{type}HypothesesList").attr('id')
+                        if $('#' + node_list_id).find(".#{type}HypothesesListItem").length > 0
+                            for list_item in $('#' + node_list_id).find(".#{type}HypothesesListItem")
+                                if $(list_item).find(".#{type}SlotHypothesis").data().value.value is topic_id
+                                    found = true
+                                    console.log("nodelistid: " + node_list_id + "list_item: " + list_item + "topic_id: " + topic_id)
+                                    if $(list_item).find(".#{type}SlotHypothesisJudgment").data().value.value isnt judgment
+                                        any = true
+                                        change_id = $(list_item).find(".#{type}SlotHypothesisJudgment").attr('id').split('-')[1]
+                                        # console.log("changing this: " + change_id);
+                                        ldc_annotate.add_message change_id, 'change', { value: judgment }
+                        if not found
+                            console.log("slot hypoth list: " + node_list_id);
+                            list_id = node_list_id.split('-')[1]
+                            any = true
+                            ldc_annotate.add_message list_id, 'add', null
+                            ldc_annotate.add_message "new.#{type}SlotHypothesis", 'change', { value: topic_id }
+                            ldc_annotate.add_message "new.#{type}SlotHypothesisJudgment", 'change', { value: judgment }
+                    if any
+                        ldc_annotate.submit_form()
+                    else
+                        $(this).removeAttr('disabled');
+
+        CaceAnnotationEreXtn:
+            EntityElementMedia: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.helper1 $(this).data(), this
+            RelationElementMedia: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.helper1 $(this).data(), this
+            EventElementMedia: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.helper1 $(this).data(), this
+            selectable_media: (e) ->
+                # $('.selected_media').css('background-color', 'white')
+                $('.selected_media').removeClass('selected_media')
+                $(this).addClass 'selected_media'
+                # $('.selected_media').css('background-color', '#ffec80')
+            EntityNotInTableButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.nil_helper this, 'entity', null, null
+            RelationNotInTableButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.nil_helper this, 'relation', null, null
+            EventNotInTableButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEre.nil_helper this, 'event', null, null
+            AddEntityLinkButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEreXtn.link_helper this, 'entity', false
+            AddRelationLinkButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEreXtn.link_helper this, 'relation', false
+            AddEventLinkButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEreXtn.link_helper this, 'event', false
+            RelationSlotSelectButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEreXtn.link_helper this, null, true
+            EventSlotEntitySelectButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.CaceAnnotationEreXtn.link_helper this, null, true
+            # should refactor with the other namespace
+            link_helper: (b, type, slot) ->
+                a = $('.selected')
+                if a.length is 0
+                    alert 'select a kb node'
+                else if a.length > 1
+                    alert 'select a single kb node'
+                else
+                    typ = $(a.first().find('td')[3]).text()
+                    if slot
+                        ldc_click.handlers.CaceAnnotationEre.link_helper2 b, type, slot, a
+                    else
+                        if type is 'entity'
+                            sel = '.EntitiesListItem'
+                            sel = '.RelationsListItem' if slot is 'relation'
+                            sel = '.EventsListItem' if slot is 'event'
+                            if $(b).parents(sel).find('.EntityTypeMenu').data().value.value in [ 'per', 'org', 'gpe', 'loc', 'fac' ]
+                                if typ in [ 'entity', 'Entity' ]
+                                    ldc_click.handlers.CaceAnnotationEre.link_helper2 b, type, slot, a
+                                else
+                                    alert "Please link this entity mention to a row in the table whose category is Entity"
+                            else if $(b).parents(sel).find('.EntityTypeMenu').data().value.value in [ 'wea', 'veh', 'com', 'sid', 'val', 'tme', 'mon', 'ttl', 'crm', 'sen', 'url', 'law', 'bal', 'res' ]
+                                if typ in [ 'filler', 'Filler' ]
+                                    ldc_click.handlers.CaceAnnotationEre.link_helper2 b, type, slot, a
+                                else
+                                    alert "Please link this filler mention to a row in the table whose category is Filler"
+                        else if type is 'relation'
+                            if typ in [ 'relation', 'Relation' ]
+                                ldc_click.handlers.CaceAnnotationEre.link_helper2 b, type, slot, a
+                            else
+                                alert "Please link this relation mention to a row in the table whose category is Relation"
+                        else if type is 'event'
+                            if typ in [ 'event', 'Event' ]
+                                ldc_click.handlers.CaceAnnotationEre.link_helper2 b, type, slot, a
+                            else
+                                alert "Please link this event mention to a row in the table whose category is Event"
+            LiveWebButton: (e) ->
+                ldc_click.handlers.CaceAnnotationEre.LiveWebButton e
+            ScreenshotButton: ->
+                ldc_click.handlers.CaceAnnotationEre.ScreenshotButton()
+            CardButton: ->
+                ldc_click.handlers.CaceAnnotationEre.CardButton()
+            media_uid: (e) ->
+                $('.selected-media').removeClass 'selected-media'
+                $("#node-#{$(this).text()}").addClass 'selected-media'
+            bcv: (e) ->
+                ldc_click.handlers.CaceAnnotationEre.bcv e
+            EntityVerificationButton: (e) ->
+                e.stopPropagation()
+                id = $(this).data().eid
+                if id
+                    kbid = $("#node-#{id}").find('.KBID').data().value.value
+                    t = $(".ElementListTable").DataTable()
+                    sel = "#node-#{kbid}-table"
+                    t.cell(sel,"verified:name").data('Y').draw()
+                    nid = $("#node-#{id}").find('.EntityVerificationStatus').data().meta.id
+                    ldc_annotate.add_message nid, 'change', { value: 'Y' }
+                    ldc_annotate.submit_form()
+            fix1: (e) ->
+                handle = $(this).siblings('.Entry').data().value.value
+                if handle is null
+                    alert 'the description is empty'
+                else
+                    iid = $(this).data().iid
+                    ldc_annotate.add_message iid, 'change', { value: handle }
+                    ldc_annotate.submit_form()
+                    $('.fix1').remove()
+            EditEntityButton: (e) ->
+                kbid = $(this).attr('data-entity')
+                if not kbid
+                  console.error("no kbid found for EditEntityButton")
+                  console.error($(this))
+                else if $(".EntityLinkRef:contains('linked to #{kbid}')" ).length > 0
+                  target = $(".EntityLinkRef:contains('linked to #{kbid}')" ).parent('.EntitiesListItem')
+                else
+                  console.error("no linked ref for EditEntityButton")
+                  console.error(kbid)
+                $('.CardButton').click()
+                $('a:contains("Entities")').click();
+                if target
+                  ldc_nodes.scroll_and_highlight(target, 'red')
+            EditRelationButton: (e) ->
+                sel = $(this).attr('data-edit')
+                $('.CardButton').click()
+                $('a:contains("Relations")').click();
+                ldc_nodes.scroll_and_highlight(sel, 'red')
+            EditEventButton: (e) ->
+                sel = $(this).attr('data-edit')
+                $('.CardButton').click()
+                $('a:contains("Events")').click();
+                ldc_nodes.scroll_and_highlight(sel, 'red')
+            MediaEyeball: ->
+                $('a:contains("Split View")').click()
+                media_element = $(this).siblings('.Media').text()
+                node = $("#node-" + media_element)
+                console.error "couldn't find node #{media_element} in kit #{$('.Root').data().obj._id}" if node.length is 0
+                node.addClass('tempHighlight')
+                node[0].scrollIntoView()
+                setTimeout () ->
+                    node.removeClass('tempHighlight')
+                ,3000
+            MediaDelete: ->
+                media_element = $(this).parents('.ListItem').find('.Media').data().meta.id
+                ldc_annotate.add_message media_element, 'change', { value: null }
+                ldc_annotate.submit_form()
+            HypothesisJudgment: (e) ->
+              $(this).siblings('input').removeAttr("checked")
+              $(this).attr("checked", "checked")
+            SaveHypothesesJudgments: (e) ->
+                e.stopPropagation()
+                attr = $(this).attr('disabled');
+                if typeof attr isnt undefined and attr isnt false
+                    $(this).attr("disabled", "disabled")
+                    console.log("here")
+                    console.log($(this).parent().find('.HypothesisJudgment[checked=checked]').length)
+                    any = false
+                    for node in $(this).parent().find('.HypothesisJudgment[checked=checked]')
+                        that = node
+                        cur_ent = $('.Root').data().selected_entity
+                        id = $(that).attr('id').split('|') # Relation/Entity, topic id, topic judgment
+                        type = id[1]
+                        topic_id = id[2]
+                        judgment = id[3]
+                        # console.log("HYPOTH JUDGMENT ID: " + id);
+                        root_list_id = $(that).parent().parent().attr('id').split('-')[1]
+                        # console.log("root_list_id: " + root_list_id);
+                        list_id = $('#node-' + root_list_id).data().meta.parent["#{type}SlotList"].meta.id
+                        # console.log("list id: " + list_id);
+                        found = false
+                        for subnode in $('#node-' + list_id).children(".#{type}SlotListItem")
+                            # console.log("there");
+                            if type is 'Event'
+                                sub = "#{type}SlotEntityLinkRef"
+                            else
+                                sub = "#{type}SlotLinkRef"
+                            if $(subnode).data()[sub].value.value is cur_ent
+                                # console.log("here");
+                                slot_id = $(subnode).attr('id')
+                                # console.log(slot_id);
+                        console.log("this slot id: " + slot_id);
+                        node_list_id = $('#' + slot_id).children(".#{type}HypothesesList").attr('id')
+                        if $('#' + node_list_id).find(".#{type}HypothesesListItem").length > 0
+                            for list_item in $('#' + node_list_id).find(".#{type}HypothesesListItem")
+                                if $(list_item).find(".#{type}SlotHypothesis").data().value.value is topic_id
+                                    found = true
+                                    console.log("nodelistid: " + node_list_id + "list_item: " + list_item + "topic_id: " + topic_id)
+                                    if $(list_item).find(".#{type}SlotHypothesisJudgment").data().value.value isnt judgment
+                                        any = true
+                                        change_id = $(list_item).find(".#{type}SlotHypothesisJudgment").attr('id').split('-')[1]
+                                        # console.log("changing this: " + change_id);
+                                        ldc_annotate.add_message change_id, 'change', { value: judgment }
+                        if not found
+                            console.log("slot hypoth list: " + node_list_id);
+                            list_id = node_list_id.split('-')[1]
+                            any = true
+                            ldc_annotate.add_message list_id, 'add', null
+                            ldc_annotate.add_message "new.#{type}SlotHypothesis", 'change', { value: topic_id }
+                            ldc_annotate.add_message "new.#{type}SlotHypothesisJudgment", 'change', { value: judgment }
+                    if any
+                        ldc_annotate.submit_form()
+                    else
+                        $(this).removeAttr('disabled');
+        VastSadAudit:
+            play_segment: (e) ->
+                nn = $(this).parents('.Timestamps')[0]
+                data = $(nn).data()
+                # data.value.end = data.value.beg + 1
+                console.log data
+                ldc_source.show_and_play_node2 data, false, ldc_click.handlers.Cmn2QualityAudit.play_callback
+            stop_segment: (e) ->
+                ldc_source.stop_playing()
+            Instruction4Label: ->
+                uid = $('.Root').data().obj.meta.original_uid + '.mp4'
+                if uid
+                    beg = $('.Timestamps').data().value.beg
+                    end = $('.Timestamps').data().value.end
+                    url = "/sources/media?uid=#{uid}#t=#{beg},#{end}"
+                    window.open(url, "_blank", 'location,status,scrollbars,resizable,width=800, height=800')
+                else
+                    alert 'no video found'
+        Cmn2ArabicTranscription:
+            ActivateBuckwalter: ->
+                $('.Root').data().activate = 'buck'
+                ldc_logic.Cmn2ArabicTranscription.activate()
+            ActivateIpa: ->
+                $('.Root').data().activate = 'ipa'
+                ldc_logic.Cmn2ArabicTranscription.activate()
+                $('.VerifyButton').prop('disabled', true)
+            VerifyButton: ->
+                if $('.ann_pane').hasClass('modal_play_audio') is false
+                    $('.ann_pane').on 'click', '#modal_play_audio', ->
+                        data = $('.Segment').data()
+                        ldc_source.show_and_play_node2 data, false, ldc_click.handlers.Cmn2QualityAudit.play_callback
+                    $('.ann_pane').addClass('modal_play_audio')
+                tokens = $(this).siblings('.TokenStuff')
+                id = tokens.data().meta.id
+                ldc_refresh_node.Cmn2ArabicTranscription.TokenStuff tokens
+                ldc_nodes.open_modal "#node-#{id} .modal"
+            LastSegmentButton: (e) ->
+                e.stopPropagation()
+                # r = $('.Root').data().resources
+                # m = r.manifest
+                # nn = $(this).parents('.Audio')[0]
+                # data = $(nn).data()
+                # if data.buffer_i is 0
+                #     alert 'first in list'
+                # else
+                #     audio = m.audio_list[data.buffer_i-1]
+                #     ldc_source.show_and_play_node2_with_audio audio, () -> null
+                # if $('.AudioListItem').length is m.audio_list.length
+                ids = (x.meta.id for x in $('.AudioList').data().children)
+                id = $(this).parents('.AudioListItem').data().meta.id
+                ii = ids.indexOf id
+                if ii is 0
+                    alert 'first in list'
+                else
+                    ldc_nodes.current_hide_show '.AudioListItem', "#node-#{ids[ii-1]}"
+            NextSegmentButton: (e) ->
+                e.stopPropagation()
+                ldc_click.handlers.Cmn2ArabicTranscription.next_segment_helper this
+            next_segment_helper: (that) ->
+                r = $('.Root').data().resources
+                m = r.manifest
+                list_item = $(that).closest('.AudioListItem')
+                nn = list_item.find('.Segment')[0]
+                data = $(nn).data()
+                ids = (x.meta.id for x in $('.AudioList').data().children)
+                id = list_item.data().meta.id
+                ii = ids.indexOf id
+                if ii < ids.length - 1
+                    ldc_nodes.current_hide_show '.AudioListItem', "#node-#{ids[ii+1]}"
+                else
+                    if $('.AudioListItem').length is m.audio_list.length
+                        alert 'last in list'
+                    else
+                        ldc_nodes.current_hide_show '.AudioListItem', "#noop"
+                        ldc_annotate.add_list_item_to_list ".AudioList"
+            PrecedingSegmentButton: (e) ->
+                e.stopPropagation()
+                nn = $(this).closest('.AudioListItem').prev()
+                data = $(nn).find('.Segment').data()
+                return unless data
+                # data.value.end = data.value.beg + 1
+                console.log data
+                # $("#node-#{data.meta.id} .play_pause_segment").text('pause')
+                ldc_source.show_and_play_node4 data, false, ldc_click.handlers.Cmn2QualityAudit.play_callback
+            FollowingSegmentButton: (e) ->
+                e.stopPropagation()
+                nn = $(this).closest('.AudioListItem').next()
+                data = $(nn).find('.Segment').data()
+                return unless data
+                # data.value.end = data.value.beg + 1
+                console.log data
+                # $("#node-#{data.meta.id} .play_pause_segment").text('pause')
+                ldc_source.show_and_play_node4 data, false, ldc_click.handlers.Cmn2QualityAudit.play_callback
+            FifteenSecWindowButton: (e) ->
+                nn = $(this).parents('.Audio')[0]
+                data = $(nn).data()
+                ldc_source.show_and_play_node2_with_adjustments data, -15, 15, () -> null
+            ThirtySecWindowButton: (e) ->
+                nn = $(this).parents('.Audio')[0]
+                data = $(nn).data()
+                ldc_source.show_and_play_node2_with_adjustments data, -30, 30, () -> null
+            ipa: (e) ->
+                n = $(this).closest('.ipa_table').siblings('.InputIpa')[0]
+                # curval = $(n).data().value.value
+                curval = $(n).find('input').val()
+                ldc_annotate.add_message $(n).data().meta.id, 'change', { value: curval + $(this).text() }
+                ldc_annotate.submit_form()
+            update_tokenstuff: (node_id) ->
+                result = []
+                rows = $("#node-#{node_id}").find('.tokenrow')
+                for row in rows
+                    checkboxes = $(row).find('.foreign, .uncertain')
+                    valtopush = ''
+                    for box in checkboxes
+                        if box.checked and $(box).hasClass('foreign')
+                            valtopush += 'f'
+                        if box.checked and $(box).hasClass('uncertain')
+                            valtopush += 'u'
+                    if valtopush is ''
+                        valtopush = 'x'
+                    result.push(valtopush)
+                ldc_annotate.add_message node_id, 'change', { value: result.join(' ') }
+            # uncertain: (e) ->
+            #     node_id = $(this).closest('.TokenStuff').attr('id').split("-")[1]
+            #     ldc_click.handlers.Cmn2ArabicTranscription.update_tokenstuff(node_id)
+            # foreign: (e) ->
+            #     node_id = $(this).closest('.TokenStuff').attr('id').split("-")[1]
+            #     ldc_click.handlers.Cmn2ArabicTranscription.update_tokenstuff(node_id)
+            CorrectButton: (e) ->
+                id = $(this).closest('.TokenStuff').data().meta.id
+                ldc_nodes.close_modal "#node-#{id} .modal"
+                ldc_click.handlers.Cmn2ArabicTranscription.next_segment_helper this
+                ldc_click.handlers.Cmn2ArabicTranscription.update_tokenstuff id
+                ldc_annotate.submit_form()
+            IncorrectButton: (e) ->
+                id = $(this).closest('.TokenStuff').data().meta.id
+                ldc_nodes.close_modal "#node-#{id} .modal"
+        GLG:
+            play_segment: (e) ->
+                nn = $(this).parents('.Timestamps')[0]
+                data = $(nn).data()
+                # data.value.end = data.value.beg + 1
+                console.log data
+                ldc_source.show_and_play_node2 data, false, ldc_click.handlers.Cmn2QualityAudit.play_callback
+            stop_segment: (e) ->
+                ldc_source.stop_playing()
+            PlayNext: (e) ->
+                $(this).css('visibility', 'hidden')
+                ldc_logic.GLG.next_clip()
+            PlayAgain: (e) ->
+                ldc_annotate.add_message('0', 'done', null);
+                ldc_annotate.submit_form();
+                # ldc_logic.GLG.next_clip()
+            answer: (e) ->
+                $('.stop_segment').click()
+                v = $(this).data().answer
+                ldc_annotate.add_message $(this).parent().siblings('.ChosenLanguage').data().meta.id, 'change', { value: v }
+                ldc_annotate.submit_form()
+#http://10.130.19.68:8080/v2/AUTH_9af82d3ecfae4ec8b2a784e380b5bd2e/nieuw-test/lid03e1/test/10/lid00022.wav
+#https://basement.ldc.upenn.edu:9000/lid03e1/test/10/lid00005.wav
+)()

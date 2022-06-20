@@ -1,0 +1,47 @@
+!!! 5
+%html
+  %head
+    %title= full_title(@title)
+    :javascript
+      console.log('test3')
+    :javascript
+      var Guide = {route: #{raw Rails.application.routes.recognize_path(request.url,method: request.env["REQUEST_METHOD"]).to_json}};
+    -# = javascript_include_tag "application" #, 'data-turbolinks-track': 'reload'
+    -# = stylesheet_link_tag "application", media: "all" #, 'data-turbolinks-track': 'reload'
+    = csrf_meta_tag
+    = javascript_tag "var AUTH_TOKEN = '#{form_authenticity_token}';" if protect_against_forgery?
+    = javascript_include_tag 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.js'
+    = javascript_include_tag 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js'
+    = javascript_include_tag 'https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js'
+    = javascript_include_tag 'https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1050.0/aws-sdk.min.js'
+    = javascript_include_tag 'https://cdn.jsdelivr.net/npm/dsp.js@1.0.1'
+    = vite_client_tag
+    = vite_javascript_tag 'application'
+    = yield(:head)#allows content_for tag to send page specific js/css include statements
+    = stylesheet_link_tag "tailwind", "data-turbo-track": "reload"
+    = stylesheet_link_tag "inter-font"
+    %meta{:name =>"viewport", :content => "width=device-width, initial-scale=1, maximum-scale=1"}
+  %body.pt-20.px-4
+    = render 'layouts/header'
+    #main-wrapper
+      #main
+        - flash.each do |key, value|
+          - if key == 'error' or key == 'danger'
+            .flash{ :class => "bg-red-300 relative rounded" }
+              .text-center
+                =value
+              .absolute.top-0.right-0.pr-2
+                %button.close &times;
+          - else
+            .flash{ :class => "bg-green-300 relative rounded" }
+              .text-center
+                =value
+              .absolute.top-0.right-0.pr-2
+                %button.close &times;
+        = yield
+    -# flash messages were broken by the upgrade, not sure why. This change fixed them.
+    / = render 'layouts/footer'
+    -if false and Rails.env.development?
+      .full
+        =debug(params)
+    %script= yield :action_specific_js#allows for page specific javascript to be run after the body is loaded

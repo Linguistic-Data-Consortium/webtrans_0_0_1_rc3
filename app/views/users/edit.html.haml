@@ -1,0 +1,60 @@
+-content_for :head do
+  = javascript_pack_tag 'users', defer: true
+
+%ul.nav.nav-tabs#form_tabs
+  %li.active.tab-header-and-content
+    =link_to "Account", 'javascript:void(0)', class: 'tab-link is-active'
+    .tab-content
+      .row-fluid
+        %div.expander
+          = link_to "Username", 'javascript:void(0)', class: 'expander-trigger expander-hidden'
+          .expander-content
+            = form_for @user, :url => update_name_user_path(@user), :html => {:autocomplete => 'off'} do |f|
+              = f.text_field :name
+              = f.submit "Save", :id => "submit_name", :class => 'btn margin-bottom-10'
+              %span.help-inline.redtext#name-alert
+
+      .row-fluid   
+        %div.expander
+          = link_to "Password", 'javascript:void(0)', class: 'expander-trigger expander-hidden'
+          .expander-content
+            = form_for @user, :url => update_password_user_path(@user), :html => {:autocomplete => 'off'} do |f|
+              %label Password
+              = f.password_field :password
+              %span.help-inline.redtext#password-alert
+              %label Confirmation
+              = f.password_field :password_confirmation
+              %span.help-inline.redtext#password_confirm-alert
+              .row-fluid
+                = f.submit "Update", :id => "submit_password", :class => 'btn margin-bottom-10'
+      
+      .row-fluid
+        -if admin?
+          %div.expander
+            = link_to "Activated", 'javascript:void(0)', class: 'expander-trigger expander-hidden'
+            .expander-content
+              = form_for @user, :url => update_activated_user_path(@user), :html => {:autocomplete => 'off'} do |f|
+                %label.inline{:title => 'Click to toggle'} Activated 
+                =f.check_box :activated
+                %strong{:class => "#{'hidden' if @user.activated?}"} Deactivated For 
+                = f.text_field :deactivated_for, :class => "#{'hidden' if @user.activated?}"
+                = f.submit "Save", :id => "submit_activated", :class => 'btn margin-bottom-10'
+  -if lead_annotator?
+    %li.tab-header-and-content
+      =link_to "Demographics", 'javascript:void(0)', class: 'tab-link'
+      .tab-content
+        =render :template => "/demographic_profiles/_form"
+    %li.tab-header-and-content
+      =link_to "Languages", 'javascript:void(0)', class: 'tab-link'
+      .tab-content
+        =render :template => 'language_users/_show_for_user'
+    %li.tab-header-and-content
+      =link_to "Personal Info", 'javascript:void(0)', class: 'tab-link'
+      .tab-content
+        =render :template => 'pii_profiles/_form'
+
+
+%ul.pager
+  %li= link_to "Return to #{@user.name}'s Profile", user_path(@user)
+
+#action_specific_js.init_edit

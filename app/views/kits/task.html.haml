@@ -1,0 +1,47 @@
+-content_for :head do
+  =javascript_include_tag 'kits'
+
+%table.full-width
+  %tr
+    %td.main
+
+      %table.display#kits{:'data-source' => "#{task_kits_path(@task)}?state=#{@state}&json_format=datatable"}
+        %thead
+          %tr
+            %th State
+            %th Kit OID
+            %th Source
+            %th continue
+            %th User
+            %th Reassign
+            %th Comment
+            %th Last Annotation
+
+        %tbody
+
+    %td.sidebar.round
+      .row-fluid
+        %strong Task:
+        =link_to @task.name, project_task_path(@task.project_id, @task.id)
+      .row-fluid
+        %strong State:
+        =@state
+
+.modal#reassign_kit_modal
+  .modal-fade-screen
+    .modal-inner
+      .modal-close
+      %h3 Re-assign kit to user
+      = form_tag reassign_kit_project_task_path(@task.project, @task), :method => 'get', :autocomplete => 'off' do
+        =hidden_field_tag :id, @task.id
+        .modal-body
+          %label Kit
+          = text_field_tag 'kit', nil, :placeholder => "Enter kit id...", :style => 'width: 250px;'
+          %label User
+          = collection_select(:user, :id, @task.users, :id, :name, :include_blank => "none")
+        .modal-footer
+          / %button.btn{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} Close
+          = submit_tag "Re-assign kit", :data => {:confirm => "Are you sure you want to reassign this kit?"}, :class => 'btn btn-primary'
+
+-content_for :action_specific_js do
+  ldc_kits.init_task();

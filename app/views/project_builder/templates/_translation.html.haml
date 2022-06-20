@@ -1,0 +1,23 @@
+%div
+  Input Source Field
+  = text_field_tag("class_def[input_source]")
+%div
+  Input Source Field Label
+  = text_field_tag("class_def[input_source_label]")
+%div
+  Context Source Field
+  = text_field_tag("class_def[context_source]")
+%div
+  Context Source Field Label
+  = text_field_tag("class_def[context_source_label]")
+%div
+  Annotation Field Name
+  = text_field_tag("class_def[annotation_name]")
+%div
+  Annotation Field Label
+  = text_field_tag("class_def[annotation_label]")
+%div
+  Judgment Buttons (one per line)
+  = text_area_tag("class_def[buttons]")
+%div
+  %input{ :type => 'hidden', :id => "template_type", :name => "template_type", :value => 'translation'}

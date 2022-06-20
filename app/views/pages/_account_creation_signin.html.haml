@@ -1,0 +1,32 @@
+.page2
+  .cleanbox
+    %h4
+      Thank you for your interest in enrolling in the Speech Biomarkers Study.
+    %p
+      To get started, you need to create a user account. You will be asked to select a username and password. 
+    %p
+      You will also be asked for an email address, which will be used to activate your account.
+    = form_for(@user) do |f|
+      = render 'shared/error_messages', :object => f.object
+      %div
+        %label Username
+        = f.text_field :name
+        / %span.help-inline.redtext#name-alert
+      %div
+        %label Your email
+        = f.text_field :email
+        %span.help-inline.redtext#email-alert
+      %div
+        %label Create a password
+        = f.password_field :password
+        %span.help-inline.redtext#password-alert
+      %div
+        %label Confirm password
+        = f.password_field :password_confirmation
+        %span.help-inline.redtext#password_confirm-alert
+      / f.hidden_field :collection_id, value: @collection.id
+      %div
+        = f.submit "Create account", :class => 'btn btn-primary'
+    .div{style: 'margin: 20px'}
+      Already have an account?
+      = link_to "Sign in here!", login_path

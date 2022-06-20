@@ -1,0 +1,53 @@
+=javascript_include_tag 'project_builder'
+=javascript_include_tag 'nodes'
+=javascript_include_tag 'research_team'
+=javascript_include_tag 'partners'
+= javascript_pack_tag 'tasks', defer: true
+
+.curve_wrapper
+  .home_title
+    %h1.header
+      Project Builder
+  .modal#edit_project_builder_modal
+  %ul.nav.nav-tabs.full_width_grid
+    %li.active.tab-header-and-content
+      =link_to "Step 1: Create or Select Project", 'javascript:void(0)', class: 'tab-link is-active'
+      .step.tab-content
+        %p.white First you must create or select a project. This project may include just one task, or several.
+        %p.white You must provide a name, title, subtitle, about, and image.
+        %p.white
+          %button.button-primary.project_build#project Create Project
+          or 
+          %button.button-primary.project_build#choose_project Choose Existing Project
+    %li.tab-header-and-content
+      =link_to "Step 2: Create or Select Task", 'javascript:void(0)', class: 'tab-link', disabled: true
+      .step.tab-content
+        %p.white Provide a name, description, and image for this task.
+        %button.button-primary.project_build#task{ disabled: 'disabled'} Create Task
+        or 
+        %button.button-primary.project_build#choose_task{ disabled: 'disabled'}  Choose Existing Task
+    %li.tab-header-and-content
+      =link_to "Step 3: Upload Dataset", 'javascript:void(0)', class: 'tab-link', disabled: true
+      .step.tab-content
+        %p.white Upload a tab-delimited dataset with information required for your activity.
+        %p.white This file should have a header describing the columns.
+        %p.white If the task requires file access (audio, image, video), one (or more) columns
+        %p.white should list the file(s) required for that kit. Each line in the file should
+        %p.white contain all data for a discrete unit of work.
+        %button.button-primary.project_build#dataset{ disabled: 'disabled'} Upload Dataset
+        or
+        %button.button-primary.project_build#choose_dataset{ disabled: 'disabled'} Choose Dataset
+    %li.tab-header-and-content
+      =link_to "Step 4: Create Tool", 'javascript:void(0)', class: 'tab-link', disabled: true
+      .step.tab-content
+        %p.white 
+        %button.button-primary.project_build#tool{ disabled: 'disabled'} Create Tool Manually
+        or
+        %button.button-primary.project_build#template{ disabled: 'disabled'} Use Template
+        / Make it easy to create elicitation/translation tool; audio classification tool; audio transcription tool
+        #tool_editor
+#action_specific_js.order_listeners
+-content_for :action_specific_js do
+  ldc_project_builder.init()
+  ua_research_team.init()
+  ua_partners.init()

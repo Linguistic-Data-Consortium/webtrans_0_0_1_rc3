@@ -1,0 +1,11 @@
+.full
+  .flexleft
+    %h1 Edit Preference Setting
+    = form_for @preference_setting, :html => {:autocomplete => 'off'} do |f|
+      %label User
+      = @preference_setting.user_name
+      %label Preference Type
+      = @preference_setting.preference_type_name
+      %label Value
+      = collection_select(:preference_setting, :value, @preference_setting.values, :itself, :itself, {}, {id: "value_select"})
+      = f.submit "Save", :id => "submit_value", :class => 'btn margin-bottom-10'

@@ -1,0 +1,77 @@
+%table.dashboard
+  %thead
+    %tr
+      %th Project
+      %th Task
+      %th Priority
+      %th Active Annotators
+      %th Work Available
+      %th Kits Completed
+      %th Deadline
+      %th Your status
+      %th Note
+  %tbody
+    - @task_users.each do |tuser|
+      -project = tuser.project
+      -task = tuser.task
+      %tr.user
+        %td
+          - if tuser.admin? || @project_admin[project.id] || @user.admin?
+            = link_to project.name, project_path(project)
+          - else
+            = project.name
+        %td
+          - if tuser.admin? || @project_admin[project.id] || @project_owner[project.id] || @user.admin?
+            = link_to task.name, project_task_path(project, task)
+            %button{:id => "task_ribbon_#{task.id}"}
+              %i.fa.fa-link
+          - else
+            = task.name
+        %td
+          -ele = @priority.select {|x| x if x[0] == task.id.to_s}
+          -if @priority.index(ele[0])
+            =@priority.index(ele[0]) + 1
+          -else
+            ="none"
+        %td
+          = @task_users_count[task.id]
+        -if task.workflow
+          %td=get_action_link(task, tuser)
+        -else
+          %td none
+        %td
+          = @kits_done_by_task[task.id].to_i
+        %td
+          -if task.deadline
+            =task.deadline.to_date
+        %td
+          -if @tasks_qualified_for_user.include?(task.id)
+            ="qualified"
+          -else
+            ="unqualified"
+        %td
+          =task.meta["notes"]
+#ribbon No Task Selected
+.dblinks
+  %a.dblink#chat{:target => "_blank"}
+    %i.fa.fa-comments.fa-4x
+    %div Chat Room
+  %a.dblink#mail{:target => "_blank"}
+    %i.fa.fa-envelope.fa-4x
+    %div Mailing List
+  %a.dblink#training{:target => "_blank"}
+    %i.fa.fa-video-camera.fa-4x
+    %div Training Videos
+  %a.dblink#guidelines{:target => "_blank"}
+    %i.fa.fa-book.fa-4x
+    %div Task Guidelines
+  %a.dblink#session{:target => "_blank"}
+    %i.fa.fa-clock-o.fa-4x
+    %div Schedule an Interactive Work Session
+  %a.dblink#supervisor{:target => "_blank"}
+    %i.fa.fa-question-circle.fa-4x
+    %div Ask a Supervisor
+  %a.dblink{:href => profile_user_path(@user)}
+    %i.fa.fa-user.fa-4x
+    %div My Profile
+    

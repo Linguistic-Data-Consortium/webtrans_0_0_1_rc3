@@ -1,0 +1,42 @@
+-content_for :head do
+  =javascript_include_tag 'kit_batches'
+
+.full
+  .flexleft
+    %h1="Kit Batch #{@kit_batch.name}"
+.full
+  #response
+    - if @kit_batch.ready
+      %div
+        waiting for kits to be created...
+    - else
+      %div
+        This batch has been processed.
+.full="Task: #{@kit_batch.task_name} (#{@kit_batch.task_id})"
+.full="Kit Count: #{@kit_batch.kit_creations.count}"
+.full="Creation Type: #{@kit_batch.creation_type}"
+.full="Kit Creator: #{@kit_batch.kit_creator}"
+.full="Created by: #{@kit_batch.created}"
+.full="State: #{@kit_batch.state}"
+.full="Block: #{@kit_batch.block}"
+
+%table#kit_creations.display
+  %thead
+    %tr
+      %th Input
+      %th Status
+      %th User
+      %th Kit
+  %tbody
+    -@kit_creations.each do |kc|
+      %tr
+        %td=@kit_batch.creation_type == "data_set" ? YAML.load(kc.input) : kc.input
+        %td=kc.status
+        %td=kc.user ? kc.user.name : ""
+        %td=kc.kit ? kc.kit.uid : ""
+%br
+.message
+  = @kit_batch.message
+
+-content_for :action_specific_js do
+  ldc_kit_batches.init_show();

@@ -1,0 +1,30 @@
+.tool-maker
+  .tool-header Create Tool
+  .tool-body
+    %div
+      Click "Add Widget" to create a new widget in the tool.
+    %div
+      All Widgets created in this builder will automatically be created with
+      labels if you fill them in.
+    %div
+      For displaying text from the input, display will be Label: Input Source
+    %div
+      "Input Source" should be a field from the uploaded dataset (for example,
+      if "Sentence" was the name of the field in the input, you would enter
+      "Sentence" into that field, sans quotes). For example, if you enter "Input
+      Sentence" into the Label field, and "Sentence" into "Input Source", where
+      your uploaded dataset has a column with the header of "Sentence", the display
+      would be something like, Input Sentence: Jack and Jill went up the hill.
+    %button.project_build#widget Add Widget
+    %select#widget-type-select.inline
+      %option{ value: "Display Text" } Display Text
+      %option{ value: "Entry Field" } Entry Field
+      %option{ value: "Dropdown Selector" } Dropdown Selector
+      %option{ value: "Button" } Button
+      %option{ value: "Audio" } Audio
+    %table.widgets-list
+      %thead
+        %tr
+          %th Widget Name
+          %th Widget Type
+      %tbody

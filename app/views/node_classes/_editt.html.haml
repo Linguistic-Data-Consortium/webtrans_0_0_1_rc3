@@ -1,0 +1,422 @@
+- parent_name = nc.parent.name #@parents[nc.parent_id].name
+
+%div{ :id => "namediv-#{nc.id}" }
+  - display_parent_name = parent_name == 'Node' ? 'Container' : parent_name
+  = "#{nc.name_without_prefix} #{nc.id} < #{display_parent_name}"
+.node_class{ :id => "edit-#{nc.id}" }
+  .fle
+    %div
+      = form_for(nc, url: node_class_path(nc), remote: true, html: { autocomplete: :off } ) do |f|
+        %div
+          %label Classes
+          %input{:type => 'text', :value => nc.constraints['classes'], :name => "node_class[classes]", :id => "nameshown-#{nc.id}", :original => nc.name_without_prefix }
+          .div
+          Classes can be one of:
+          "Menu" (for dropdown menus), "Entry" (for text entry), "Checkbox", "Textarea", "CheckboxGroup", "Radio", "MultiMenu", "SLeaf", and "Set".
+          Do not include quotes.
+          %hr
+          - if parent_name == 'Node' or parent_name == 'Root'
+            %label Tab Titles
+            %input{:type => 'text', :value => nc.constraints['tab_titles'], :name => "node_class[tab_titles]" }
+            - a = nc.constraints['wrap'] || []
+            .wrap
+              %label wrap
+              - a.each_with_index do |x, i|
+                .flex.wrap-item
+                  %input{:type => 'text', :value => x[0], :name => "node_class[wrap-#{i}-0]" }
+                  %input{:type => 'text', :value => x[1], :name => "node_class[wrap-#{i}-1]" }
+                  - prepend = (x[2] && x[2] == "prepend")
+                  %select{:name => "node_class[wrap-#{i}-2]"}
+                    %option{:value => "append", :selected => !prepend}="append"
+                    %option{:value => "prepend", :selected => prepend}="prepend"
+                  %i.fa.fa-minus.wrap-minus
+            %i.fa.fa-plus.wrap-plus
+          - if choicelist_supertypes.include?(parent_name) or parent_name == 'Leaf'
+            %label Values/Labels
+            - a = ((nc.value and nc.value['values']) ? nc.value['values'].zip(nc.value['labels']) : []).select { |x| x[0] && x[0].length > 0 }.uniq
+            - a = a.map { |x| x.join ' ' }.join "\n"
+            %textarea{ name: 'child_choice_values_labels', wrap: 'hard', cols: 30 }= a
+            .div Values and labels should be space separated, with each pair line separated, e.g.:
+            .div value Labeltext
+            .div value2 Labeltext2
+            .div Values must be alphanumeric only (no hypens, other punctuation, etc).
+        %hr
+        .control
+          %label control
+          - which = (nc.constraints['control'] && nc.constraints['control']['which']) || ''
+          %input{:type => 'text', :value => which, :name => "node_class[control-which]" }
+          - a = (nc.constraints['control'] && nc.constraints['control']['patterns']) || []
+          - a.each_with_index do |x, i|
+            .flex.control-item
+              %input{:type => 'text', :value => x[0], :name => "node_class[control-#{i}-0]" }
+              %input{:type => 'text', :value => x[1], :name => "node_class[control-#{i}-1]" }
+              %input{:type => 'text', :value => x[2], :name => "node_class[control-#{i}-2]" }
+              %i.fa.fa-minus.control-minus
+        %i.fa.fa-plus.control-plus
+        %hr
+        - if parent_name == 'List'
+          %label table columns
+          %input{:type => 'text', :value => nc.constraints['table_columns'], :name => "node_class[table_columns]" }
+          %label auto add
+          %input{:type => 'text', :value => nc.constraints['auto_add'], :name => "node_class[auto_add]" }
+          %label.checkbox
+            = check_box_tag 'node_class[add_to_top]', 'add_to_top', nc.constraints['add_to_top'], :autocomplete => 'off', id: "add_to_top-#{nc.id}"
+            Add new ListItem to top of list
+          %label.checkbox
+            = check_box_tag 'node_class[reverse_order]', 'reverse_order', nc.constraints['reverse_order'], :autocomplete => 'off', id: "reverse_order-#{nc.id}"
+            Reverse order of display of ListItems
+          %label.checkbox
+            = check_box_tag 'node_class[ncrnt]', 'ncrnt', nc.constraints['ncrnt'], :autocomplete => 'off', id: "ncrnt-#{nc.id}"
+            Only show current list item
+        - if parent_name == 'Leaf'
+          %label table cell
+          %input{:type => 'text', :value => nc.constraints['table_cell'], :name => "node_class[table_cell]" }
+          -#%div
+          -#  %label.inline Level
+          -#  %div
+          -#    %input.userinput{:type => 'text', :id => "leveltext-#{nc.id}", :name => "level_text", :value => nc.value['level'], :original => nc.value['level']}
+        - if nc.constraints.length > 0
+          %h1
+            constraints
+          - if nc.constraints['maps'] and nc.constraints['maps'].length == 1
+            %h2
+              map
+            - nc.constraints['maps'].each do |map|
+              - %w[ root target ].each do |k|
+                %div
+                  %span= k
+                  %span= ':'
+                  %span= map[k]
+              - s = map['map'].map { |x| x.join ':' }.join("\n")
+              %textarea{ name: 'constraints_map', wrap: 'hard', cols: 30 }= s
+        %hr
+        - if parent_name == 'ChoiceLabel'
+          %div
+            %label Template
+            %div
+              %input.userinput{type: 'text', value: nc.value['template'], name: 'node_class[template]', id: "template-#{nc.id}"}
+        - if parent_name == 'Audio'
+          %label.checkbox
+            = check_box_tag "waveform", 'waveform', nc.value['waveform'], :autocomplete => 'off', id: "waveform-#{nc.id}"
+            waveform
+          %label.checkbox
+            = check_box_tag "timestamps", 'timestamps', nc.value['timestamps'], :autocomplete => 'off', id: "timestamps-#{nc.id}"
+            timestamps
+
+        - if parent_name == 'Text'
+          %label.checkbox
+            = check_box_tag "document", 'document', nc.value['document'], :autocomplete => 'off', id: "document-#{nc.id}"
+            document
+
+        -if parent_name == 'Ref'
+          %div{:id => "listofchildren-#{nc.id}"}
+            =render :partial => "/node_classes/child", :locals => { :nc => nc, :child => nc.value, :parent_name => 'Ref'}
+        -elsif labelbutton_types.include? parent_name
+          %div{:id => "listofchildren-#{nc.id}"}
+            =render :partial => "/node_classes/child", :locals => { :nc => nc, :child => nc.value, :parent_name => parent_name}
+        -elsif nonlist_node_supertypes.include? parent_name
+          -#%label.inline Children
+          -#= "-"
+          -#= #link_to "Add Child", '#', :url => add_child_class_def_node_class_path(@class_def, nc), :class => 'add_child'
+          -#%label{ for: "node_classes_autocomplete2-#{nc.class_def_id}" } Children
+          -#%input{type: 'text', id: "node_classes_autocomplete2-#{nc.class_def_id}", class: 'node_classes_autocomplete2', value: @ncy_name, name: "node_classes_autocomplete2" }
+          %label Children (space separated list of widget names)
+          - value = nc.children.split(',').map { |x| x.split('.').first }.join(' ')
+          %input{:type => 'text', :value => value, :name => "node_class[children]", class: 'childrenlist' }
+          -#%ul.sortable{:id => "listofchildren-#{nc.id}"}
+          -#  -if nc.children
+          -#    -nc.children.split(",").each do |child|
+          -#      =render :partial => "/node_classes/child", :locals => { :nc => nc, :child => child, :parent_name => parent_name}
+        -elsif list_supertypes.include? parent_name
+          %label.inline Child
+          -#%span= "(#{parent_name}s have exactly one child)"
+          - value = nc.children.split(',').map { |x| x.split('.').first }.join(' ')
+          = value
+          -#%input{:type => 'text', :value => value, :name => "node_class[children]" }
+          -#%ul.sortable{:id => "listofchildren-#{nc.id}"}
+          -#  -children_array = nc.children.split(",")
+          -#  -if children_array.length == 0
+          -#    = #render :partial => "/node_classes/child", :locals => { :nc => nc, :child => "NewName.#{@class_def.name}:NewName", :parent_name => parent_name}
+          -#  -else
+          -#    =render :partial => "/node_classes/child", :locals => { :nc => nc, :child => children_array[0], :parent_name => parent_name}
+        -elsif choicelist_supertypes.include? parent_name
+          - v = nc.value.has_key?('extra') ? nc.value['extra']['label'] : ''
+          - v ||= ''
+          %div
+            %label.inline Default
+            %div
+              %input.userinput{ :type => 'text', :id => "childtextt-#{nc.id}", :name => "child_textt", :value => v, :original => v }
+          %strong Choices
+          = "-"
+          = #link_to "Add Choice", '#', :url => add_child_class_def_node_class_path(@class_def, nc), :class => 'add_child'
+          -#%ul.sortable{:id => "listofchildren-#{nc.id}"}
+          -#  -nc.value['values'].zip(nc.value['labels']).each do |pair|
+          -#    =render :partial => "/node_classes/child", :locals => { :nc => nc, :child => pair, :parent_name => parent_name}
+        -elsif parent_name == "Table"
+          %label Columns
+          %input{:type => 'text', :value => nc.constraints['columns'], :name => "node_class[columns]" }
+        - if parent_name.in? %w[ Menu Radio CheckboxGroup ]
+          %h3#modalHeader Hide Another Widget
+          %div
+            .modal-body
+              %div
+                Hide another widget based on this widget's values.
+              %div
+                The root here indicates the scope of action.  For a simple tool it might actually be Root, but usually the constraint
+                applies within a ListItem that repeats (and therefore applies multiple times).
+              %div
+                The target node will be hidden by the values selected below.
+              - a = nc.value['values']
+              - if a
+                = hidden_field_tag :hide, a.join(' ')
+                %h4
+                  root node
+                = text_field_tag :root
+                %h4
+                  target node
+                = text_field_tag :target
+                %h4
+                  values
+                %div
+                  = check_box_tag 'empty'
+                  = 'empty'
+                - a.each do |value|
+                  %div
+                    = check_box_tag value
+                    = value
+              - else
+                = hidden_field_tag :abort
+            .modal-footer
+              %button.btn{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} Cancel
+              %button.btn.save_constraints{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true', :node_class_id => nc.id} Save
+        -#%div{ id: "add-add-modal-#{nc.id}", :"aria-hidden" => "true", :"aria-labeledby" => "modalHeader", :tabindex => "-1", :role => "dialog"}
+        - if parent_name.in? %w[ Button ]
+          %hr
+          %div
+            .modal-body
+              %div
+                This button will add a ListItem to a List.
+              %div
+                The scope of action will be the ListItem that contains this button, or the Root otherwise.  The target must be within the same scope.
+              %div
+                The target node is the List to which a ListItem will be added.
+              %h4
+                target node
+              - v = nc.constraints['messages']
+              - v = v.select { |x| x['add'] }.first if v
+              - v = v['target'] if v
+              - v = '' unless v
+              %input{:type => 'text', :value => v, :name => "node_class[add]" }
+
+          %hr
+          %div
+            .modal-body
+              %div
+                This button will delete a ListItem from a List.
+              %div
+                A scope of action isn't necessary for this function
+              %div
+                The target node is the ListItem that contains the Button.
+              = hidden_field_tag :delete, 'true'
+              %div
+                = check_box_tag 'confirm'
+                use a confirmation pop up
+              %div
+                - w = 'true'
+                - v = nc.constraints['messages']
+                - v = v.select { |x| x['delete'] }.first if v
+                - w = v ? v['delete'] : 'false'
+                - %w[ false true confirm ].each do |ww|
+                  %input{ type: "radio", name: "node_class[delete]", value: ww, checked: (w == ww ? 'checked' : nil) }
+                    = ww == 'confirm' ? "true (confirm)" : ww
+          %hr
+
+        - if parent_name.in? %w[ Button Text Label Table ]
+          %div
+            .modal-body
+              %div
+                = "This #{parent_name} will be attached to another widget."
+              %div
+                The scope of action will be the ListItem that contains this button, or the Root otherwise.  The target must be within the same scope.
+              %div
+                = "The target node is the widget to which the #{parent_name} will be attached."
+              %h4
+                target node
+              - v = nc.constraints['attach']
+              - v = v.select { |x| x['where'] }.first if v
+              - w = v['where'] if v
+              - v = v['target'] if v
+              - v = v.join ' ' if v
+              - v = '' unless v
+              %input{:type => 'text', :value => v, :name => "node_class[attach]" }
+              %h4
+                where
+              %div
+                - %w[ before after prepend append none ].each do |ww|
+                  %input{ type: "radio", name: "node_class[where]", value: ww, checked: (w == ww ? 'checked' : nil) }
+                    = ww
+
+
+        - if false #parent_name.in? %w[ Label ]
+          .modal-header
+            %button.close{:type => 'button', :data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} &times;
+            %h3#modalHeader Attach Label to Another Widget
+          %div
+            .modal-body
+              %div
+                This Label will be attached to another widget.
+              %div
+                The target node is the widget to which the label will be attached.
+              = hidden_field_tag :label, 'true'
+              %h4
+                target node
+              = text_field_tag :target
+              %div
+                = check_box_tag 'small'
+                use the small, closer version of the label
+            .modal-footer
+              %button.btn{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} Cancel
+              %button.btn.save_constraints{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true', :node_class_id => nc.id} Save
+
+
+
+        %hr
+        = submit_tag 'Save', style: 'margin: 40px'
+
+
+    -#%div
+    -#  %div{:id => "divforstyle-#{nc.style_id}", :name => StyleTest.find(nc.style_id).name_without_prefix}
+    -#    = render partial: 'style_tests/style', locals: { style: StyleTest.find(nc.style_id) }
+    %div.constraints{ id: "constraints-#{nc.id}" }
+    %div
+      -#- if true
+      -#  - %w[ hideself ].zip([ 'hide self' ]).each do |x|
+      -#    %div
+      -#      %button.btn.btn-primary.btn-small.add-btn{:role => 'button', :data => {:htarget => 'self', :toggle => 'modal', :target => "add-#{x[0]}-modal-#{nc.id}" } }
+      -#        = x[1]
+      -#- case parent_name
+      -#- when 'Menu'
+      -#  - %w[ map hide disable ].zip([ 'filter values', 'hide widgets', 'disable widgets' ]).each do |x|
+      -#    %div
+      -#      - a = nc.value['values']
+      -#      %button.btn.btn-primary.btn-small.add-btn{:role => 'button', :data => {:toggle => 'modal', :target => "add-#{x[0]}-modal-#{nc.id}", :maporhide => 'empty ' + a.join(' ') } }
+      -#        = x[1]
+      -#- when 'Button'
+      -#  - %w[ add delete toggle attach current].zip([ 'add to list', 'delete from list', 'toggle widgets', 'attach', 'delete current' ]).each do |x|
+      -#    %div
+      -#      %button.btn.btn-primary.btn-small.add-btn{:role => 'button', :data => {:toggle => 'modal', :target => "add-#{x[0]}-modal-#{nc.id}" } }
+      -#        = x[1]
+      -#- when 'Label'
+      -#  - %w[ label ].zip([ 'attach' ]).each do |x|
+      -#    %div
+      -#      %button.btn.btn-primary.btn-small.add-btn{:role => 'button', :data => {:toggle => 'modal', :target => "add-#{x[0]}-modal-#{nc.id}" } }
+      -#        = x[1]
+      -#- when 'Node'
+      -#  - %w[ container ].zip([ 'attach' ]).each do |x|
+      -#    %div
+      -#      %button.btn.btn-primary.btn-small.add-btn{:role => 'button', :data => {:toggle => 'modal', :target => "add-#{x[0]}-modal-#{nc.id}" } }
+      -#        = x[1]
+      -#-when 'List'
+      -#  - %w[ list ].zip([ 'list properties' ]).each do |x|
+      -#    %div
+      -#      %button.btn.btn-primary.btn-small.add-btn{:role => 'button', :data => {:toggle => 'modal', :target => "add-#{x[0]}-modal-#{nc.id}" } }
+      -#        = x[1]
+      -#-when 'Text'
+      -#  - %w[ hide disable ].zip([ 'hide widgets', 'disable widgets' ]).each do |x|
+      -#    %div
+      -#      %button.btn.btn-primary.btn-small.add-btn{:role => 'button', :data => {:toggle => 'modal', :target => "add-#{x[0]}-modal-#{nc.id}", :maporhide => 'empty nonempty' } }
+      -#        = x[1]
+      -#-when 'Radio'
+      -#  - %w[ hide disable ].zip([ 'hide widgets', 'disable widgets' ]).each do |x|
+      -#    %div
+      -#      - a = nc.value['values']
+      -#      %button.btn.btn-primary.btn-small.add-btn{:role => 'button', :data => {:toggle => 'modal', :target => "add-#{x[0]}-modal-#{nc.id}", :maporhide => 'empty ' + a.join(' ') } }
+      -#        = x[1]
+      -#-when 'CheckboxGroup'
+      -#  - %w[ hide disable ].zip([ 'hide widgets', 'disable widgets' ]).each do |x|
+      -#    %div
+      -#      - a = nc.value['values']
+      -#      %button.btn.btn-primary.btn-small.add-btn{:role => 'button', :data => {:toggle => 'modal', :target => "add-#{x[0]}-modal-#{nc.id}", :maporhide => 'empty ' + a.join(' ') } }
+      -#        = x[1]
+-#%div{ id: "add-map-modal-#{nc.id}", :"aria-hidden" => "true", :"aria-labeledby" => "modalHeader", :tabindex => "-1", :role => "dialog"}
+- if false
+  .modal-header
+    %button.close{:type => 'button', :data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} &times;
+    %h3#modalHeader Add Filter
+  %div
+    .modal-body
+      %div
+        Filter another widget's values.
+      %div
+        The root here indicates the scope of action.  For a simple tool it might actually be Root, but usually the constraint
+        applies within a ListItem that repeats (and therefore applies multiple times).
+      %div
+        The target node will have its values filtered according to what you enter below.
+      - a = nc.value['values']
+      - if a
+        = hidden_field_tag :map, a.join(' ')
+        %h4
+          root node
+        = text_field_tag :root
+        %h4
+          target node
+        = text_field_tag :target
+        %h4
+          values
+        - a.each do |value|
+          %div= value
+          %div
+            = text_field_tag value
+      - else
+        = hidden_field_tag :abort
+    -#.modal-footer
+    -#  %button.btn{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} Cancel
+    -#  %button.btn.save_constraints{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true', :node_class_id => nc.id} Save
+-#%div{ id: "add-hide-modal-#{nc.id}", :"aria-hidden" => "true", :"aria-labeledby" => "modalHeader", :tabindex => "-1", :role => "dialog"}
+-#%div{ id: "add-delete-modal-#{nc.id}", :"aria-hidden" => "true", :"aria-labeledby" => "modalHeader", :tabindex => "-1", :role => "dialog"}
+-#%div{ id: "add-toggle-modal-#{nc.id}", :"aria-hidden" => "true", :"aria-labeledby" => "modalHeader", :tabindex => "-1", :role => "dialog"}
+- if parent_name.in? %w[ Button ]
+  .modal-header
+    %button.close{:type => 'button', :data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} &times;
+    %h3#modalHeader Toggle Widgets
+  %div
+    .modal-body
+      %div
+        This button will toggle (hide or show) the specified widgets.
+      %div
+        The scope of action is the whole tool.
+      %div
+        The target nodes are the nodes to toggle.  You can list multiple space separated types.
+      = hidden_field_tag :hide_button, 'true'
+      %h4
+        target node
+      = text_field_tag :target
+    -#.modal-footer
+    -#  %button.btn{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} Cancel
+    -#  %button.btn.save_constraints{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true', :node_class_id => nc.id} Save
+-#%div{ id: "add-label-modal-#{nc.id}", :"aria-hidden" => "true", :"aria-labeledby" => "modalHeader", :tabindex => "-1", :role => "dialog"}
+-#%div{ id: "add-container-modal-#{nc.id}", :"aria-hidden" => "true", :"aria-labeledby" => "modalHeader", :tabindex => "-1", :role => "dialog"}
+- if parent_name.in? %w[ Node ]
+  .modal-header
+    %button.close{:type => 'button', :data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} &times;
+    %h3#modalHeader Attach Container to Another Widget
+  %div
+    .modal-body
+      %div
+        This Container will wrap the target widgets.
+      %div
+        The scope of action is the parent of the targeted widgets.
+      %div
+        The target node is the widget(s) to be wrapped by the Container.
+      = hidden_field_tag :container, 'true'
+      %h4
+        parent node
+      = text_field_tag :root
+      %h4
+        target node(s)
+      = text_field_tag :target
+    -#.modal-footer
+    -#  %button.btn{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} Cancel
+    -#  %button.btn.save_constraints{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true', :node_class_id => nc.id} Save
+-content_for :action_specific_js do
+  ldc_class_defs.init_auto();

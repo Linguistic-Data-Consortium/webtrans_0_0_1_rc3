@@ -1,0 +1,8 @@
+- if @data_set.files.attached?
+  -# = image_tag @data_set.image.variant(resize: "100x100")
+  attached
+- else
+  no attached files
+= form_for(@data_set, remote: true, html: { "data-type" => 'json' }) do |f|
+  = f.file_field :files, multiple: true, direct_upload: true
+  = f.submit "Submit", class: "btn btn-primary", 'data-close-dialog': true

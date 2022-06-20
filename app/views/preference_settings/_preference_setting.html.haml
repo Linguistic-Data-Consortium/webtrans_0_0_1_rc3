@@ -1,0 +1,11 @@
+%tr
+  = form_for preference_setting do |f|
+    -if admin? || @task && task_admin?
+      %td= link_to preference_setting.user_name, preference_setting.user
+      %td= link_to preference_setting.preference_type_name, preference_setting
+    -else
+      %td= preference_setting.preference_type_name
+    %td
+      = collection_select(:preference_setting, :value, preference_setting.values, :to_s, :to_s, {:include_blank => "", :selected => preference_setting.value})
+    %td
+      = f.submit 'Save', :class => 'btn btn-primary'

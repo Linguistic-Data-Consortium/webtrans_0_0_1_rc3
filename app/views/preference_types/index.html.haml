@@ -1,0 +1,17 @@
+%h1 All preference types
+
+.full.flexleft
+  =render :partial => "new", locals: {preference_type: @preference_type}
+%table.display
+  %thead
+    %tr
+      %th Id
+      - if @task.nil?
+        %th Task Id
+      %th Name
+      %th Values
+      -if admin? || @task && task_admin?
+        %th Edit
+        %th Delete
+  %tbody
+    = render @preference_types

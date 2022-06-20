@@ -1,0 +1,28 @@
+%table.full-width
+  %tr
+    %td.main      
+      %strong name:
+      = @object.name
+      %button.btn.btn-link.inline{:type => 'button', :data => {:toggle => 'collapse', :target => '#editname'}} Edit
+      #editname.collapse
+        = form_for @object, :html => {:autocomplete => 'off'} do |f|
+          = f.text_field :name
+          = f.submit "Save", :id => "submit_name", :class => 'btn margin-bottom-10'
+      = @object.object
+      %button.btn.btn-link.inline{:type => 'button', :data => {:toggle => 'collapse', :target => '#editobject'}} Edit
+      #editobject.collapse
+        = form_for @object, :html => {:autocomplete => 'off'} do |f|
+          = f.text_area :object, class: 'input-block-level'
+          = f.submit "Save", :id => "submit_object", :class => 'btn margin-bottom-10'
+      
+      
+    %td.sidebar.round
+      .row-fluid
+        %strong Created: 
+        = @object.created_at.to_date
+      .row-fluid
+        %strong Last Updated: 
+        = @object.updated_at.to_date
+        
+%ul.pager
+  %li= link_to "Return to objects", user_defined_objects_path

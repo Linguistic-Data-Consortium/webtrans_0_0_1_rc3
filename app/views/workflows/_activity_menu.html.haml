@@ -1,0 +1,39 @@
+.activity_menu
+  .activity_menu_wrapper
+    .menubox
+      =link_to "About", @task.project
+    .menubox
+      =link_to "Annotate", @task.project
+    -if @task.project.researchers.size > 0
+      .menubox
+        =link_to "Our Research Team", projects_research_team_path(@task.project)
+    -if !@task.project.blog_url.blank?
+      .menubox
+        = link_to "News", @task.project.full_blog_url, :target => "_blank"
+    .menubox
+      -if @task.messageboard
+        = link_to "Chat", Thredded::UrlsHelper.messageboard_topics_path(@task.messageboard)
+      -elsif @task.project.messageboard_group
+        = link_to "Chat", thredded.show_messageboard_group_path(@task.project.messageboard_group)
+      -else
+        = link_to "Chat", "#"
+    -if !@task.tutorial.blank?  
+      .menubox.submenu
+        .modal
+          .modal-trigger
+            =link_to "Tutorial", '#'
+          .modal-fade-screen
+            .modal-inner.normal-links
+              .modal-close
+              %h3#modalHeader Tutorial
+              = render_content(@task.tutorial, @task.project)
+    -if !@task.reference_guide.blank?  
+      .menubox.submenu
+        .modal
+          .modal-trigger
+            =link_to "Reference", '#'
+          .modal-fade-screen
+            .modal-inner.normal-links
+              .modal-close
+              %h3#modalHeader Reference
+              = render_content(@task.reference_guide, @task.project)

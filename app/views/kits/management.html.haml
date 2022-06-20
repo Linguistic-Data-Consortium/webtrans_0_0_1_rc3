@@ -1,0 +1,19 @@
+-content_for :head do
+  =javascript_include_tag 'kits'
+
+/ %strong Task Kit Management
+/ .row-fluid
+/   = form_tag set_kits_done_kits_path, :autocomplete => 'off' do
+/     = collection_select(:task, :id, @tasks, :id, :name, :prompt => true)
+/     = submit_tag "Mark all task kits as done", :data => {:confirm => "Are you sure you want to mark all task kits as done for selected task?"}, :class => 'btn margin-bottom-10'
+/ doesn't work
+
+%strong Individual Kit Management
+.row-fluid
+  = form_tag "/kits/change_kit_state", :method => 'patch', :autocomplete => 'off' do
+    = text_field_tag 'kit[uid]', nil, :placeholder => "Enter kit id...", :class => 'input-xlarge'
+    = select_tag 'kit[state]', options_for_select(@states), :prompt => 'New State...'
+    = submit_tag 'Save'
+
+-content_for :action_specific_js do 
+  != "ldc_kits.init_management('#{change_kit_state_kits_path}');"

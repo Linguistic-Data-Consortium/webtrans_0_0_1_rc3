@@ -1,0 +1,27 @@
+-content_for :head do
+  = javascript_include_tag "languages"
+
+.full
+  .half
+    .flexleft
+      %h1 #{@title}
+  .half
+    .flexright
+      -if admin?
+        =render :partial => 'new'
+%table#languages.display{:'data-source' => languages_path(format: :json, json_format: :datatable)}
+  %thead
+    %tr
+      %th Language code
+      %th LDC code
+      %th Language name
+      %th Description
+      %th Comment
+      %th Custom
+  %tbody
+
+
+
+-content_for :action_specific_js do
+  ldc_languages.init_index();
+

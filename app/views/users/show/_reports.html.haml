@@ -1,0 +1,14 @@
+%table.display
+  %thead
+    %tr
+      %th Type
+      /%th Latest
+      -if admin?
+        %th Group
+  %tbody
+    -@reports.each do |name, v|
+      %tr
+        %td=link_to name, "/reports/reports/#{name}/type"
+        /%td=link_to v[:most_recent].updated_at.getlocal.strftime("%m/%d/%Y %H:%M"), reports_report_path(v[:most_recent]) if v[:most_recent]
+        -if admin?
+          %td=link_to "edit", group_path(v[:group])

@@ -1,0 +1,15 @@
+//@import "neat-helpers";
+
+// grid setting variables
+$column: 90px;
+$gutter: 30px;
+$grid-columns: 12;
+
+// Create screen size variables
+$medium-screen-width: 600px;
+$large-screen-width: 900px;
+
+// breakpoints
+// reduces number of columns on smaller screens
+$small-screen-down: new-breakpoint(max-width $medium-screen-width 4);
+$medium-screen-down: new-breakpoint(max-width $large-screen-width 8);

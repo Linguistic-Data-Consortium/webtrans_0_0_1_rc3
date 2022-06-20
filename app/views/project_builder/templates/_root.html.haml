@@ -1,0 +1,10 @@
+.tool-maker
+  %h1.tool-header Create Tool from Template
+  %p Nothing is saved until the very end when you hit "Save".
+  .tool-body
+    =form_for @class_def, :url => project_builder_create_template_path, format: :json  do |f|
+      .shared
+        = render :partial => 'project_builder/templates/shared.html', :locals => { :f => f }
+        %div
+          %input{ :type => 'hidden', :id => "class_def_id", :name => "class_def[id]", :value => @class_def.id }
+        = f.submit 'Save', :class => 'button-primary close-btn'

@@ -1,0 +1,6 @@
+%h4=@display[:title]
+-@display[:displays].each do |k, v|
+  .row-fluid= v == 'document' ? "#{v} #{k}" : "#{k} : #{v}"
+
+%br/
+= link_to "Return to #{@task.name}", project_task_path(@task.project_id, @task)

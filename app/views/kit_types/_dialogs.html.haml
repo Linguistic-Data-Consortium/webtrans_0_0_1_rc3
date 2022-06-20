@@ -1,0 +1,53 @@
+#message_dialog
+#confirm_dialog
+#document_viewer_dialog
+#legend_dialog{:title => 'Legend'}
+%script
+  $('.edit_node_class_modal').on('hidden', function(){
+  window.location.reload();
+  });
+.modal#tree_locked_modal
+  .modal-fade-screen
+    .modal-inner
+      .modal-close
+      %h3
+        This kit is locked.
+      #current_locked
+        %div
+          As the owner, you may unlock the kit.
+        %button#tree_locked_modal_submit{ kit_id: @kit.id }
+          Unlock
+/ .modal.hide.fade#file_upload_modal
+/   .modal-header
+/     %button.close{:type => 'button', :data => {:dismiss => 'modal'}, :"aria-hidden" => true} &times;
+/     %h3 Confirm upload
+
+/   .modal-body
+/     Are you sure?
+/   .modal-footer
+/     %button.btn.btn-primary#file_upload_modal_submit Submit
+/     %button.btn{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} Cancel
+/ .modal.hide.fade#file_choice_modal
+/   .modal-header
+/     %button.close{:type => 'button', :data => {:dismiss => 'modal'}, :"aria-hidden" => true} &times;
+/     %h3 Choose file
+
+/   .modal-body
+/   .modal-footer
+/     %button.btn{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} Cancel
+/ .modal.hide.fade#listitem_move_modal
+/   .modal-header
+/     %button.close{:type => 'button', :data => {:dismiss => 'modal'}, :"aria-hidden" => true} &times;
+/     %h3 Move ListItem
+
+/   .modal-body
+/     Move item in position
+/     %span
+/       x
+/     to position
+/     %input{ type: 'text' }
+/     .div
+/       remember that the first position is position 0, not 1
+/   .modal-footer
+/     %button.btn.btn-primary#listitem_move_modal_submit Submit
+/     %button.btn{:data => {:dismiss => 'modal'}, :"aria-hidden" => 'true'} Cancel

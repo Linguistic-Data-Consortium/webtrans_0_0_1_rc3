@@ -1,0 +1,16 @@
+window.ldc_kit_batches = ( ->
+    init_index: ->
+        $('#kit_batches').dataTable({sPaginationType: "full_numbers", bJQueryUI: true});
+    init_show: ->
+        $('#kit_creations').dataTable({sPaginationType: "full_numbers", bJQueryUI: true});
+        # $('#response').html "waiting for kits to be created..."
+        $.get window.location.pathname, (data) ->
+            if data.status is 'done'
+                $('#response').html "Kit processing is finished."
+            else if data.status is 'error'
+                $('#response').html data.error
+            else if data.status is 'finished'
+                window.location.reload()
+            console.log data.status
+        , 'json'
+)()

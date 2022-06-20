@@ -1,0 +1,25 @@
+
+%h1 Guidelines
+
+= form_with model: @new_guideline, local: true do |f|
+  %div
+    %strong Guidelines name: 
+    =f.hidden_field :name, value: @current_guideline.name
+    = @current_guideline.name unless @current_guideline.nil?
+  %div
+    %strong Current document:
+    =f.hidden_field :url, value: @current_guideline.url
+    =link_to "Download", @current_guideline.url, target: '_blank' unless @current_guideline.nil?
+  %div
+    %strong Current Version #:
+    = @current_guideline.version unless @current_guideline.nil?
+
+  %div
+    %strong New Version #:
+    =f.number_field :version, value: @current_guideline.version + 0.1, step: 0.01
+  %div
+    %strong Upload document
+    =f.file_field :file
+
+  %div
+    =f.submit 'Upload newer guidelines'

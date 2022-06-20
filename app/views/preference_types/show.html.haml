@@ -1,0 +1,11 @@
+.full
+  .flexleft
+    %h1 Edit Preference Type
+    = form_for @preference_type, :html => {:autocomplete => 'off'} do |f|
+      %label Name
+      = f.text_field :name
+      %label Task Id
+      = f.text_field :task_id
+      %label Values
+      = f.text_field :values
+      = f.submit "Save", :id => "submit_preference_type", :class => 'btn margin-bottom-10'

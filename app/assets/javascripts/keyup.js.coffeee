@@ -1,0 +1,18 @@
+window.ldc_keyup = ( ->
+    tool = null
+    ann = ldc_annotate
+    init: (namespace, t) ->
+        that = this
+        tool = t
+        if that.handlers[namespace]
+            $.each that.handlers[namespace], (x, y) ->
+                # console.log "handle"
+                selector = ".#{x}"
+                $('.Root').on 'keyup', selector, y
+    handlers:
+        Cmn2ArabicTranscription:
+            Buckwalter: (e) ->
+                ldc_refresh_node.Cmn2ArabicTranscription.Buckwalter_helper $(this)
+            InputIpa: (e) ->
+                ldc_refresh_node.Cmn2ArabicTranscription.InputIpa_helper $(this)
+)()

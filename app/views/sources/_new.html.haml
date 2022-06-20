@@ -1,0 +1,12 @@
+.modal-fade-screen
+  .modal-inner
+    .modal-close
+    .modal-header New Source
+    .modal-body
+      =form_for @source, :remote => true, format: :json, :authenticity_token => true do |f|
+        %label UID
+        = f.text_field :uid
+        %label File
+        = f.file_field :file, direct_upload: true
+        .modal-footer
+          = f.submit 'Save', :class => 'btn btn-primary close-btn'

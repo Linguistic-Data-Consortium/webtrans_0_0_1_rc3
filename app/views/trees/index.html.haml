@@ -1,0 +1,12 @@
+-content_for :head do
+  = javascript_pack_tag 'trees', defer: true
+
+%pre
+  blah
+.test
+  test
+
+-content_for :action_specific_js do
+  - hash = @kit.to_hash(false,false)
+  != "$('pre').append(#{hash.to_json});"
+  != "$('pre').append(x);"

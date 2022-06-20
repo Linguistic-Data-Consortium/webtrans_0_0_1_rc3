@@ -1,0 +1,4 @@
+$('.task_select').empty();
+$('.task_select').append( $('<option>Select the task</option>'));
+-@tasks.each do |task|
+	$('.task_select').append( $('<option value="#{task.id}">#{task.name}</option>') );

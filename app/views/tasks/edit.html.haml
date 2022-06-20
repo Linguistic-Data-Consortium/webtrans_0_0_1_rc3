@@ -1,0 +1,75 @@
+= javascript_pack_tag 'tasks', defer: true
+= stylesheet_pack_tag 'tasks'
+
+%h1 Edit task
+
+= form_for [@project, @task], :html => {:autocomplete => 'off'} do |f|
+  
+  %div
+    %strong Name:
+    = f.text_field :name
+  %div
+    %strong Workflow:
+    = collection_select(:task, :workflow_id, @workflows, :id, :name)
+  %div
+    %strong Kit Type:
+    = collection_select(:task, :kit_type_id, @kit_types, :id, :composite_name, :prompt => true)
+  %div
+    %strong Data Set:
+    = collection_select(:task, :data_set_id, @data_sets, :id, :name, :prompt => true)
+
+
+
+  %div
+    %strong Meta:
+    .well
+      %div
+        %label.inline Production
+        <input type="radio" name="task[meta][production]" id="task_meta_production" value="production" #{'checked=true' if @task.meta["production"] && @task.meta["production"] == "production"}>
+      %div
+        %label.inline Nonproduction
+        <input type="radio" name="task[meta][production]" id="task_meta_production" value="nonproduction" #{'checked=true' if @task.meta["production"] && @task.meta["production"] == "nonproduction"}>
+    %div
+      %label.inline="Notes"
+      <input type="text" name="task[meta][notes]" id="task_meta_notes" value="#{@task.meta["notes"]}">
+    %div
+      %label.inline="docid"
+      <input type="text" name="task[meta][docid]" id="task_meta_docid" value="#{@task.meta["docid"]}">
+    %div
+      %label.inline="Chat Room Link"
+      <input type="text" name="task[meta][chat_room_link]" id="task_meta_chat_room_link" value="#{@task.meta["chat_room_link"]}">
+    %div
+      %label.inline="Mailing List Link"
+      <input type="text" name="task[meta][mail_list_link]" id="task_meta_mail_list_link" value="#{@task.meta["mail_list_link"]}">
+    %div
+      %label.inline="Training Videos Link"
+      <input type="text" name="task[meta][training_link]" id="task_meta_training_link" value="#{@task.meta["training_link"]}">
+    %div
+      %label.inline="Task Guidelines Link"
+      <input type="text" name="task[meta][task_guidelines_link]" id="task_meta_task_guidelines_link" value="#{@task.meta["task_guidelines_link"]}">
+    %div
+      %label.inline="Schedule Interactive Work Session Link"
+      <input type="text" name="task[meta][schedule_session_link]" id="task_meta_schedule_session_link" value="#{@task.meta["schedule_session_link"]}">
+    %div
+      %label.inline="Ask A Supervisor Link"
+      <input type="text" name="task[meta][supervisor_link]" id="task_meta_supervisor_link" value="#{@task.meta["supervisor_link"]}">
+
+  %div
+    %strong Status:
+    %div
+      %label.inline Active
+      = radio_button("task", "status", "active")
+      %label.inline Inactive
+      = radio_button("task", "status", "inactive")
+
+  %div
+    %strong Task description for help page:
+    %div
+      = @task.help
+      = f.text_area :help, :style => 'width: 500px;'
+
+  = f.submit 'Save changes', :class => 'button-primary close-btn'
+
+#action_specific_js.init_edit
+-content_for :action_specific_js do
+  ldc_autocompletes.init()

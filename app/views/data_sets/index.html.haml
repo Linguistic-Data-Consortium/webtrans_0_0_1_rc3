@@ -1,0 +1,17 @@
+%h1 All data sets
+
+.full
+  - if admin? or project_manager?
+    .half
+      .flexleft
+        =render :partial => "new"
+%table.display
+  %thead
+    %tr
+      %th Id
+      %th Data Set
+      -if admin? or project_manager?
+        %th Edit
+        %th Delete
+  %tbody
+    = render @data_sets

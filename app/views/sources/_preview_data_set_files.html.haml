@@ -1,0 +1,20 @@
+%label Data Set Files
+-if @data_set.files.size == 0
+  = "No files uploaded."
+-else
+  .data_set_assets
+    -@data_set.files.each do |a|
+      .asset.clearfix
+        .col-6.float-left
+          -if a.blob.content_type.start_with?("image")
+            = image_tag(a)
+          -elsif a.blob.content_type.start_with?("audio")
+            = audio_tag( url_for(a), controls: true )
+          -elsif a.blob.content_type.start_with?("video")
+            = video_tag( url_for(a), controls: true )
+          -elsif a.blob.content_type.start_with?("text")
+            = a.blob.download[0..100]
+          -else
+            %i.fas.fa-file.fa-5x
+        .col-6.float-left
+          = a.blob.filename

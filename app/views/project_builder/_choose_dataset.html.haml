@@ -1,0 +1,12 @@
+.modal-fade-screen
+  .modal-inner
+    .modal-close
+    %h1.modal-header Choose Data Set 
+    = form_for :data_set, :remote => true, format: :json, :url => data_sets_respond_with_dataset_path do |f|
+      .modal-body
+        %div
+          %label.inline Name
+          = collection_select(:data_set, :id, @data_sets, :id, :name)
+          %input{ :type => 'hidden', :id => "task_id", :name => "task_id", :value => @task.id}
+      .modal-footer
+        = f.submit 'Save', :class => 'button-primary close-btn'

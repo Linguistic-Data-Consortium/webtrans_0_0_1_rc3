@@ -1,0 +1,19 @@
+.modal-fade-screen
+  .modal-inner
+    .modal-close
+    .modal-header New Task
+    .modal-body
+      =form_for [@project, @task], :remote => true, format: :json  do |f|
+        %div
+          %label Task Name
+          = f.text_field :name
+          %label Task Description (accepts markdown)
+          = f.text_area :help
+          %label TODO: Task Image
+          -# %label Kit Type Name
+          -# = text_field_tag :kit_type_name
+          -# %label Namespace Name (tool name)
+          -# = text_field_tag :class_def_name
+          = hidden_field_tag :fast
+          = hidden_field_tag :list
+        = f.submit 'Save', :class => 'btn btn-primary close-btn'

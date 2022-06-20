@@ -1,0 +1,52 @@
+= javascript_pack_tag 'permissions'
+= stylesheet_pack_tag 'permissions'
+
+.background
+  - if admin?
+    .sec
+      You're a site admin
+  %hr
+  .sec
+    Portal Manager?
+    = (current_user.bportal_manager?.to_s)
+  %hr
+  .sec
+    Project Manager?
+    = (current_user.bproject_manager?.to_s)
+    (AKA Project Designer or Lead Annotator)
+  %hr
+  .sec
+    %h2
+      Projects
+    - @projects.each do |p|
+      - if p.member?(current_user)
+        %hr
+        .project
+          .name
+            you're a member of Project 
+            %b
+              = p.name
+            = "with #{p.project_users.count} users and #{p.tasks.count} tasks"
+          .name
+            %b 
+              owner?
+            = p.owner?(current_user)
+          .name
+            %b
+              admin?
+            = p.admin?(current_user)
+          .name
+            - p.tasks.each do |t|
+              .task
+                .name
+                  Task
+                  %b= t.name
+                  = "with #{t.project_users.count} users"
+                .name
+                  %i
+                    admin?
+                  = t.admin?(current_user)
+                .name
+                  %i
+                    member?
+                  = !t.member?(current_user).nil?

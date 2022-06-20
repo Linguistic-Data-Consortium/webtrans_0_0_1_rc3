@@ -1,0 +1,33 @@
+-content_for :head do
+  =javascript_include_tag 'tasks'
+
+%table.full-width
+  %tr
+    %td.main
+      %strong=@display[:title]
+      = form_tag( process_kits_project_task_path(@task.project, @task), :method => 'post' ) do
+        -@options.each do |key, value|
+          =hidden_field_tag :"option[#{key.downcase}]", @options[key]
+        .btn-group.btn-group-vertical{:data => {:toggle => 'buttons-checkbox'}}
+          -@display[:displays].each do |k, v|
+            %label.checkbox
+              = check_box_tag 'kit[]', k, false, :id => k
+              %span
+                = "#{k} : #{v}"
+                = link_to 'readonly', "/workflows/workflows/#{@task.workflow_id}/read_only/#{k}", :target => '_blank'
+           
+        %span.help-block=@display[:information] if @display.has_key? :information
+        = submit_tag "Process #{"selected " if @display[:displays].keys.length > 0}kits" , :class => 'btn btn-primary'
+      
+    %td.sidebar.round
+      .row-fluid
+        %strong Task:
+        = link_to @task.name, project_task_path(@task.project_id, @task)
+      .row-fluid
+        %strong Select:
+        =link_to 'all', "#", :id => 'select_all'
+        |
+        =link_to 'none', "#", :id => 'select_none'
+
+-content_for :action_specific_js do 
+  ldc_tasks.init_process_kits_preview();

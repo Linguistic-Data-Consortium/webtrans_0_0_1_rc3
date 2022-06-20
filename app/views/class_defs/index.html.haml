@@ -1,0 +1,37 @@
+-content_for :head do
+  = javascript_include_tag "nodes"
+  = javascript_include_tag 'class_defs'
+#query
+.full
+  .half
+    .flexleft
+      %strong All Namespaces
+  .half
+    .flexright
+      =render :partial => "new"
+
+%table.display
+  %thead
+    %tr
+      %th Name
+      %th Preview
+      %th Paths
+      %th Tree
+      -if admin?
+        %th Lock
+        %th Delete
+  %tbody
+    = render partial: 'class_def', collection: @class_defs
+
+#delay_table
+
+.cleanbox
+  - @h['class_defs'].each do |c|
+    - c.each do |k, v|
+      %div
+        %button{ class: "class_def #{v['id']} #{v['name']}" }
+          = v['name']
+
+- text = {}
+-content_for :action_specific_js do
+  != "ldc_class_defs.init_index(#{text.to_json});"

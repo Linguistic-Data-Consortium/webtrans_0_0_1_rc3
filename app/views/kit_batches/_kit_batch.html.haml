@@ -1,0 +1,10 @@
+%tr
+  %td=link_to "#{kit_batch.name ? kit_batch.name : 'show'}", kit_batch_path(kit_batch)
+  %td=kit_batch.user_name
+  %td=kit_batch.task_name
+  %td=@kit_creation_counts[kit_batch.id]
+  %td=kit_batch.state
+  %td=kit_batch.creation_type
+  %td=kit_batch.kit_creator
+  %td=kit_batch.created
+  %td=kit_batch.block

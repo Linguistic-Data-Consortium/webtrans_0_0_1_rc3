@@ -1,0 +1,29 @@
+-content_for :head do
+  =javascript_include_tag 'kit_batches'
+
+.full
+  .half
+    .flexleft
+      %h1 Kit Batches
+  .half
+    .flexright
+      %a{:href => new_kit_batch_path}
+        %button Create New Batch
+
+%table#kit_batches.display
+  %thead
+    %tr
+      %th Name
+      %th User
+      %th Task
+      %th Kit Count
+      %th State
+      %th Creation Type
+      %th Kit Creator
+      %th Created By
+      %th Block?
+  %tbody
+    =render @kit_batches
+
+-content_for :action_specific_js do 
+  ldc_kit_batches.init_index();

@@ -1,0 +1,11 @@
+.modal-fade-screen
+  .modal-inner
+    .modal-close
+    %h1.modal-header Choose Task 
+    = form_for :task, :remote => true, format: :json, :url => tasks_respond_with_task_path do |f|
+      .modal-body
+        %div
+          %label.inline Name
+          = collection_select(:task, :id, @tasks, :id, :name)
+      .modal-footer
+        = f.submit 'Save', :class => 'button-primary close-btn'

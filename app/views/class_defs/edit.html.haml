@@ -1,0 +1,17 @@
+-content_for :head do
+  =javascript_include_tag 'nodes'
+
+- if @ok
+  %div
+    = @class_def.name
+  = render partial: 'workflows/editor', locals: { class_def: @class_def }
+  .ann_pane
+  .Root
+- else
+  locked by
+  = User.find(@class_def.locked_by).name
+
+-content_for :action_specific_js do
+  ldc_nodes.init();
+  != "ldc_nodes.set_node_classes_url(#{@class_def.id});"
+  ldc_nodes.set_node_classes3().then(function(){ldc_nodes.init_edit_pane();});

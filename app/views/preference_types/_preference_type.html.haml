@@ -1,0 +1,25 @@
+%tr
+  %td= link_to preference_type.id, preference_type
+  -if @task.nil?
+    %td= link_to preference_type.task_id, preference_type.task
+  %td= link_to preference_type.name, preference_type
+  %td= link_to preference_type.values, preference_type
+  -if admin? || @task && task_admin?
+    %td
+      #edit_preference_type.modal
+        %label
+          .modal-trigger
+            %button Edit
+        .modal-fade-screen
+          .modal-inner
+            .modal-close
+            .modal-body
+              = form_for preference_type, :html => {:autocomplete => 'off'} do |f|
+                %label Name
+                = f.text_field :name
+                %label Task Id
+                = f.text_field :task_id
+                %label Values
+                = f.text_field :values
+                = f.submit "Save", :id => "submit_preference_type", :class => 'btn margin-bottom-10'
+    %td= link_to "delete", preference_type, :method => :delete, :data => {:confirm => "This will delete the preference type: #{preference_type.name}, are you sure you want to do this?"}, :title => "Delete #{preference_type.name}", :id => "delete_#{preference_type.id}"

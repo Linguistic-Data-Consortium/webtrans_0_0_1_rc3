@@ -1,0 +1,22 @@
+.modal-fade-screen
+  .modal-inner.arc_bg
+    .modal-close.arc_bg
+    .modal-header New Dataset
+    .modal-body
+      =form_for @data_set, :url => url_for(:controller => 'data_sets', :action => 'create') do |f|
+        %label Dataset Name
+        = f.text_field :name
+        %label Dataset Description
+        = f.text_field :description
+        %label Manifest File
+        = f.file_field :spec
+        %label Data Files (audio, images, videos, etc)
+        = f.file_field :files, multiple: true, direct_upload: true
+        %label Randomize manifest items order? This will affect all users of the manifest.
+        = radio_button_tag("data_set[randomize]", true, false, required: true)
+        %label.inline Yes
+        = radio_button_tag("data_set[randomize]", false, true, required: true)
+        %label.inline No
+        %input{:type => 'hidden', :id => "data_set_for_task", :name => "data_set[for_task]", :value => @task.id}
+        .modal-footer
+          = f.submit 'Save', :class => 'button-primary close-btn'

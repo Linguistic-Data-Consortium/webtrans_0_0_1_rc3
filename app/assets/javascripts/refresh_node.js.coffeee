@@ -1,0 +1,824 @@
+window.ldc_refresh_node = ( ->
+
+    # defining variables here avoids having to pass them to the callbacks
+    # they'll be set on each call
+    namespace = null
+    name = null
+    types = null
+    nodesn = null
+    sel = null
+    iid = null
+    node = null
+    wrap = null
+    array2html = (a) -> ldc_nodes.array2html a
+    choose_entities_helper = (sel, node, h, hh, class1, class2) ->
+        list = if node.data() and node.data().value.value then node.data().value.value else []
+        # h = ldc_nodes.choose_entities params
+        a = [ [ 'none', 'NONE' ] ]
+        a = []
+        $.each hh, (k, v) ->
+            a.push [ k, v ]
+        $.each h, (k, v) ->
+            a.push [ k, v ]
+        b = []
+        node_id = node.data().meta.id
+        if node.hasClass('menu')
+            b = [ [ 'option', 'id', "node-#{node_id}-em-", 'value', '', '' ] ]
+            type = if node.hasClass('radio') then 'radio' else 'checkbox'
+            $.each a, (i, x) ->
+                id = "node-#{node_id}-em-#{x[0]}" # autocomplete off
+                show = if x[1].length > 10 then x[1].substr(0, 10) else x[1]
+                input = [ 'option', 'id', id, 'value', x[0], show ]
+                input = [ 'option', 'id', id, 'value', x[0], x[1] ]
+                if x[0] in list
+                    node.data().menu_display_string = x[1] #show
+                    input.splice input.length-1, 0, 'selected', 'selected'
+                b.push input
+            b = [ [ 'select', b ] ]
+        else
+            type = if node.hasClass('radio') then 'radio' else 'checkbox'
+            $.each a, (i, x) ->
+                id = "node-#{node_id}-em-#{x[0]}" # autocomplete off
+                input = [ 'input', 'id', id, 'type', type, 'name', "#{node_id}-set", '' ]
+                if x[0] in list
+                    input.splice input.length-1, 0, 'checked', 'checked'
+                b.push [ 'div', 'class', class2, [
+                        input
+                        [ 'label', 'for', id, x[1] ]
+                    ]]
+        [ 'div', 'class', class1, b ]
+    choose_entities = (sel, node, h, hh) ->
+        a = choose_entities_helper sel, node, h, hh, 'entities', 'entities_mention'
+        node.find(sel).after array2html a
+    choose_entities2 = (sel, node, h, hh, additional) ->
+        a = choose_entities_helper sel, node, h, hh, "dynamic_choice_list #{additional}", 'dynamic_choice_item'
+        $(sel).html array2html a
+    header = (s) ->
+        if node.children('.header').length is 0
+            node.find(s).wrapAll("<div class=\"virtual header #{name}Header\" />")
+    header2 = (s, s2) ->
+        if node.children('.header').length is 0
+            node.find(s).wrapAll("<div class=\"virtual header #{name}Header\" />")
+            node.find(s2).appendTo(node.find(".#{name}Header"))
+    refresh_node: (t, n, bootstrap_mode, s) ->
+        types = t
+        nodesn = n
+        sel = s
+        a = types[0].split ':'
+        namespace = a[0]
+        name = a[1]
+        if $(sel).hasClass('ListItem')
+            if $('.Root').hasClass('accordion_listitems')
+                if $(sel).hasClass('ListItemHidden') is false
+                    $(sel).addClass 'ListItemHidden'
+                    $(sel).wrap '<div class="ListItemWrapper"/>'
+                    $(sel).before '<div class="ListItemBanner accordion"/>'
+            else if $('.Root').hasClass('modal_listitems')
+                if $(sel).hasClass('is-modal') is false
+                    $(sel).addClass 'is-modal'
+                    $(sel).wrap '<div class="ListItemModal modal"/>'
+                    $(sel).before '<div class="ListItemBanner modal-trigger">banner</div>'
+                    $(sel).wrap '<div class="ListItemFadeScreen modal-fade-screen"/>'
+                    $(sel).wrap '<div class="ListItemInner modal-inner"/>'
+                    $(sel).before '<div class="modal-close"/>'
+        if wrap is null
+            wrap = $('.Root').data().obj.meta.wrap
+        # wrap =
+        #     NeedFrameListItem: [
+        #         [ '.NeedType,.TimeStatus,.NeedUrgent,.ReportedSet', 'NeedFrameListItemLeft' ],
+        #         [ '.Place,.ProxyName,.ResolutionStatus,.ResolvedSet', 'NeedFrameListItemRight' ],
+        #         [ '.NeedFrameListItemLeft,.NeedFrameListItemRight', 'NeedFrameListItemTop' ]
+        #     ]
+        # NodeClass.constraints['wrap'] is list of pairs
+        # first element is selector, second element is virtual node class name
+        wrap = {} unless wrap
+        nc = ldc_nodes.get_node_class_by_name(name)
+        wrap[name] = nc.c.wrap if nc.c and nc.c.wrap
+        if wrap and wrap[name]
+            #     console.log "WRAP"
+            #     wrap[name] = [
+            #         [ ".NeedType,.TimeStatus,.NeedUrgent,.ReportedSet,.Place,.ProxyName,.ResolutionStatus,.ResolvedSet", 'NeedFrameListItemTop' ]
+            #     ]
+            nnode = $(sel)
+            # console.log "refreshing"
+            $.each wrap[name], (i, x) ->
+                vid = "node-#{nnode.data().meta.id}-virtual-wrap-#{i}"
+                # console.log vid
+                # console.log $('.TopicNameLabel').length
+                return if $("##{vid}").length > 0
+                wrapxml = "<div id=\"#{vid}\" class=\"virtual #{x[1]}\" />"
+                wrapsel = "#{sel} .#{x[1].replace(' ','')}"
+                if x[2] is 'prepend'
+                    nnode.prepend(wrapxml)
+                else
+                    nnode.append(wrapxml)
+                # console.log "wrapping #{x[0]} #{x[1]}"
+                if x[0].match(/\./)
+                    nnode.children(x[0]).appendTo($(wrapsel))
+                else
+                    $.each x[0].split(' '), (i, y) ->
+                        nnode.find(".#{y}").appendTo $(wrapsel)
+                if x[1] is 'Tabs'
+                    titles = if nc.c.tab_titles then nc.c.tab_titles.split(',') else []
+                    tabs = nnode.children('.Tabs')
+                    tabs.children().wrap '<div class="tab-content"/>'
+                    tabs.children().wrap '<li class="tab-header-and-content"/>'
+                    tabs.children().each (i, x) ->
+                        title = if titles[i] then titles[i] else "Tab #{i}"
+                        $(x).prepend "<a href=\"javascript:void(0)\" class=\"tab-link\">#{title}</a>"
+                    tabs.children().wrapAll '<ul class="nav-tabs"/>'
+                    # tabs.find(x[0]).each (i, x) ->
+                    #     $(x).parent().siblings('.tab-link').text($(x).attr('class'))
+                    ldc_lui.tabs11 tabs.children()
+                    # tabs.    a = [ 'ul', 'class', 'nav-tabs', tabs1 ]
+                    # tabs.children().each (i, x) ->
+                    #     tabs.append ldc_nnodes.array2html [ 'li', 'class', 'tab-header-and-content', [
+                    #         [ 'a', 'href', "javascript:void(0)", 'class', 'tab-link', 'blah' ] #cc.meta.name ]
+                    #         [ 'div', 'class', 'tab-content', 'id', "blah", '' ] # "nnode-#{cc.meta.nid}-tab", '' ]
+                    #     ] ]
+                    #     $(x).appendTo tabs
+            if name is 'NeedFrameListItem' or name is 'IssueFrameListItem'
+                x = nnode.find('.ProxyName')
+                x.prependTo x.parent()
+                x = nnode.find('.NeedUrgent')
+                x.prependTo x.parent()
+
+        if ldc_nodes.get_constraint('rtl')
+            $("#{sel} input").css('direction', 'rtl')
+
+        ns = this[namespace]
+        if ns
+            f = name
+            if ns[f]
+                iid = sel.replace '#node-', ''
+                node = $(sel)
+                ns[f](node)
+            f = "logic"
+            if ns[f]
+                iid = sel.replace '#node-', ''
+                node = $(sel)
+                ns[f]('refresh', node, node.data())
+    FullEntity:
+        EntityListItem: (node) ->
+            ldc_refresh_node.RichEre.EntityListItem node
+            # header '.EntityListItemLabel, .DeleteEntityButton'
+            # node.find('.DeleteEntityButton').appendTo(node.find('.EntityListItemHeader'))
+        MentionList: ->
+            ldc_refresh_node.RichEre.specialline node
+    VieFullEntity:
+        EntityListItem: (node) ->
+            ldc_refresh_node.RichEre.EntityListItem node
+        MentionList: ->
+            ldc_refresh_node.RichEre.specialline node
+    RichEre:
+        MentionList: ->
+            ldc_nodes.wait_for '.uncoref-current-mention', ->
+                unless $('.bluebar').length
+                    $('.uncoref-current-mention').after('<div class="bluebar"><div class="line horizontal-line"></div></div>')
+            ldc_refresh_node.RichEre.specialline node
+        specialline: (node) ->
+            if $('.specialline').length is 0
+                node.after ldc_nodes.array2html [ 'div', 'class', "specialline", 'style', 'display: flex;', 'tabindex', '0', [
+                        [ 'div', 'class', 'EntryLabel', 'style', 'flex-grow: 1;', 'nom head' ]#data.meta.node_class.value.label ]
+                        [ 'div', 'class', 'speciallinetext', 'style', 'flex-grow: 3;', 'test' ]
+                    ] ]
+        EventArgTime: ->
+            node.find('input').datepicker
+                changeMonth: true
+                changeYear: true
+                dateFormat: "yy-mm-dd"
+                constrainInput: false
+        EntityListItem: (node) ->
+            # display the mentions
+            node.find('.mentions').remove()
+            a = []
+            # a.push [ 'div', 'class', "EntryLabel", 'style', "font-size:14px; width:120px; height:40px;", 'Mentions:' ]
+            # a.push [ 'div', 'class', nc.name.split(':')[1], nc.value.label ]
+            $.each node.data().refs, (i, x) ->
+                mention = $("#node-#{i}").parents('.MentionListItem')
+                level = mention.find('.MentionLevelType').data()
+                i = level.meta.node_class.value.values.indexOf(level.value.value)
+                if i or i is 0
+                    v = level.meta.node_class.value.labels[i]
+                else
+                    v = ''
+                a.push [ 'div', 'class', 'flex', [
+                    [ 'div', 'class', 'ListItemLabel', "mention #{mention.data().meta.id}:" ]
+                    [ 'div', 'id', "mention-name-#{mention.data().meta.id}", "#{v}:" ]
+                    [ 'div', 'id', "mention-#{mention.data().meta.id}", 'class', 'mention', mention.find('.Text').data().value.text ]
+                ] ]
+            # node.prepend('<div class="ListItemLabel" style="font-size:16px; width:120px; height:30px; float: left;">'+ </div>')
+            node.append array2html [ 'div', 'class', 'mentions', a ]
+        EventMentionListItem: ->
+            v = node.find('.EventType').data().value.value
+            vv = node.find('.EventSubType').data().value.value
+            vv = '' if vv is null
+            node.find('.subtype-display').remove()
+            node.find('.EventSubType').after '<div class="subtype-display">' + vv + '</div>'
+            $('.subtype-display').css('float', 'left')
+            # if $(x).find('.delete-event-mention').length is 0
+            #     $(x).append('<button class="btn btn-danger delete-event-mention">Delete Event Mention</button>')
+
+            # console.log 'ATTRIBUTE'
+            # console.log "#{vv} vs #{subtype}"
+        EventHopperListItem: ->
+            node.find('.EventType, .EventHopperName').hide()
+            node.find('.event-mentions').remove()
+            a = []
+            # console.log 'WWWWW'
+            # console.log ref
+            # console.log hoppers
+            first_mention = null
+            $.each node.data().refs, (i, x) ->
+                mention = $("#node-#{i}").parents('.EventMentionListItem')
+                mention_id = mention.data().meta.id
+                first_mention = mention_id unless first_mention
+                font_color = 'green'
+                b = []
+                $.each $("#node-#{mention_id}").data().EventArgList.children, (i, arg) ->
+                    arg_text = arg.EventArgText.value.text
+                    if typeof arg_text is 'undefined'
+                        arg_ref = arg.EventArgRef.value.value
+                        arg_text_data = $('#node-'+arg_ref).data()
+                        return if typeof arg_text_data is 'undefined'
+                        arg_text = arg_text_data.value.text
+                        return if typeof arg_text is 'undefined' or arg_text is ''
+                        if font_color is 'green'
+                            font_color = 'blue'
+                        else
+                            font_color = 'green'
+
+                        # $(x).after('<div style="font-size:16px; color:'+font_color+'; width:240px; height:30px; float: left;">'+arg_text+'</div>')
+                        b.push("<span class=\"#{font_color}\">#{arg_text}</span>")
+                a.push [ 'div', 'id', "event-mention-#{mention_id}", 'class', 'event-mention', [
+                    [ 'div', "mention #{mention_id}: #{mention.find('.EventMentionTrigger').data().value.text} #{b.join(' ')}" ]
+                ] ]
+            node.append array2html [ 'div', 'class', 'event-mentions', a ]
+            if a.length
+                # first_mention = $(x).find('.event-mention').first().attr('id').replace(/event-mention-/, '')
+                type = $("#node-#{first_mention}").data().EventType.value.value
+                subtype = $("#node-#{first_mention}").data().EventSubType.value.value
+
+                node.prepend ldc_nodes.array2html [ 'div', 'class', 'hopper-header', [ #style', 'display: flex; justify-content: space-around;', [
+                    [ 'div', "Sub Type: #{subtype}" ]
+                    [ 'div', "Type: #{type}" ]
+                    [ 'div', "Hopper #{node.data().meta.id}" ]
+                ] ]
+        # RelationListItem: ->
+        #     $(x).prepend('<div class="ListItemLabel" style="font-size:16px; width:120px; height:30px;">Relation '+$(x).data().meta.id+'</div>')
+    DeftAnomalyBeliefSentiment:
+        BeliefSourceRef: ->
+            ldc_refresh_node.DeftAnomalyBeliefSentiment2.refresh2 node
+        SentimentSourceRef: ->
+            ldc_refresh_node.DeftAnomalyBeliefSentiment2.refresh2 node
+        IssueType: ->
+            $("#node-#{iid}-table").html tablecinner(node.data())
+    DeftAnomalyBeliefSentiment2:
+        # BeliefSourceListItem: ->
+        #     node.prepend "here #{iid}"
+        refresh_source_ref: (x, mode) ->
+            ref = if mode is 'belief' then '.BeliefSourceRef' else '.SentimentSourceRef'
+            source = $(x).find(ref)
+            ldc_refresh_node.DeftAnomalyBeliefSentiment2.refresh_source_ref2 $(source)
+        refresh_source_ref2: (node) ->
+            xml = $('.Root').data().xml
+            return if xml is undefined
+            return if node.data() is undefined
+            if node.data().value.value is 'author'
+                t = 'AUTHOR'
+            else if node.data().value.value is 'other'
+                t = 'OTHER'
+            else
+                source_xml = xml[node.data().value.value]
+                return if source_xml is undefined
+                t = $(source_xml).find('mention_text').text()
+            # console.log t
+            src = { text: t }
+            # $(source).find('.ref-text').html(ldc_nodes.text_inner( src, {} ))
+            node.find('.ref-text').html( src.text )
+        refresh2: (node) ->
+            srcc = $('#node-' + node.data().value.value).data()
+            if srcc
+                src = srcc.src
+                # src = { text: source_xml.text() }
+                # $(source).find('.ref-text').html(ldc_nodes.text_inner( src, {} ))
+                if src
+                    node.find('.ref-text').html( src.text )
+            else
+                ldc_refresh_node.DeftAnomalyBeliefSentiment2.refresh_source_ref2 node
+        BeliefSourceRef: ->
+            ldc_refresh_node.DeftAnomalyBeliefSentiment2.refresh2 node
+        SentimentSourceRef: ->
+            ldc_refresh_node.DeftAnomalyBeliefSentiment2.refresh2 node
+        MentionRef: ->
+            node.html ''
+        ArgRef: ->
+            node.html ''
+        # BeliefList: ->
+        #     node.find('DeleteBelief:first').hide()
+        # SentimentList: ->
+        #     node.find('DeleteSentiment:first').hide()
+        BeliefListItem: ->
+            header '.BeliefListItemLabel, .DeleteBelief'
+        BeliefSourceListItem: ->
+            header '.SourceLabel, .DeleteSourceButton'
+            node.find('.DeleteSourceButton').appendTo(node.find('.BeliefSourceListItemHeader'))
+        SentimentSourceListItem: ->
+            header '.SourceLabel, .DeleteSourceButton'
+            node.find('.DeleteSourceButton').appendTo(node.find('.SentimentSourceListItemHeader'))
+    Chunker:
+        ChunkListItem: ->
+            header2 '.ChunkLabel, .DeleteChunkButton', '.DeleteChunkButton'
+    EntityDiscoveryLinking:
+        KbLinkNodeId: ->
+            v = node.data().value
+            if v
+                v = v.value
+            else
+                v = ''
+            s1 = "<div><b>Kb Entity Id</b></div>"
+            s2 = "<div>#{v}</div>"
+            s3 = "<div><button class=\"btn-small btn-success SetNode\">set</button></div>"
+            s4 = "<div><button class=\"btn-small btn-danger UnSetNode\">unset</button></div>"
+            s = s1 + s2 + s3 + s4
+            node.html s
+    KbpAssessment2016:
+        EntityRef: ->
+            if true or node.hasClass 'empty'
+                node.html('')
+        EntityListItem: ->
+            header '.EntityListItemLabel, .DeleteEntityButton'
+            node.find('.mentions').remove()
+            a = []
+            type = null
+            $.each node.data().refs, (i, x) ->
+                mention = $("#node-#{i}").parents('.FillerListItem, .ExistingFillerListItem')
+                type = "MENTIONS"
+                a.push [ 'div', 'id', "mention-#{mention.data().meta.id}", 'class', 'mention flex', [
+                    [ 'div', "mention #{mention.data().meta.id}: " ]
+                    [ 'div', 'class', 'entity_mention_text', mention.find('.FillerText,.ExistingFillerText').data().value.text ]
+                    [ 'button', 'class', 'btn btn-small uncoref_mention', 'unmerge' ]
+                    [ 'button', 'class', 'btn btn-small handle_mention', 'handle' ]
+                    [ 'button', 'class', 'btn btn-small show_entity_mention', 'show' ]
+                ] ]
+            # if a.length is 0
+            #     a.push [ 'button', 'class', 'btn delete-entity', 'delete entity' ]
+            node.append array2html [ 'div', 'class', 'mentions', a ]
+            # node.prepend array2html [ 'div', 'class', 'header', "#{iid} #{type}" ]
+        Entity: ->
+            $('.coref').remove()
+            types = {}
+            $('.EntityRef.empty').each (i, x) ->
+                type = $(x).siblings('.FillerAssessment').data().value.value
+                return unless type is 'correct' or type is 'inexact'
+                type = 'MENTIONS'
+                if type
+                    types[type] = [] unless types[type]
+                    text = $(x).siblings('.FillerText, .ExistingFillerText').data().value.text
+                    types[type].push ldc_refresh_node.KbpAssessment2016.show_helper x, text
+            mentions = for type, a of types
+                [ 'div', 'class', 'well-lesser', [ [ 'div', type ] ].concat(a) ]
+            b = [
+                [ 'div', 'class', 'flex', [
+                    [ 'button', 'class', 'btn-success btn-small create_entity_button', 'merge' ]
+                    [ 'button', 'class', 'btn-success btn-small merge_mentions_button', 'merge into' ]
+                ] ] ]
+            a = b.concat mentions
+            $('.Entity').prepend array2html [ 'div', 'class', 'coref', a ]
+            $('.coref').css('height', '400px').css('overflow', 'auto')
+        show_helper: (x, text) ->
+            [ 'div', 'id', "coref-mention-#{$(x).data().meta.id}", 'class', 'coref_mention flex', [
+                [ 'button', 'class', 'btn btn-small show_mention', 'show' ]
+                [ 'div', text ]
+            ] ]
+        HandleMentionRef: ->
+            ref = node.data().value.value
+            if ref
+                mention = $("#node-#{ref}")
+                id = mention.data().meta.id
+                node.html array2html [ 'div', 'class', 'flex', [
+                    [ 'div', 'class', 'handlesub1', "handle #{id}: " ]
+                    [ 'div', 'class', 'handlesub2', mention.find('.Text').data().value.text ]
+                ] ]
+            else
+                node.html ''
+    XDocCoref:
+        Root: ->
+            node.append ldc_nodes.array2html [ 'div', 'class', 'main2', [
+                [ 'div', 'class', 'ticker flex', '' ]
+                [ 'div', 'class', 'mainn', [
+                    [ 'div', 'class', 'left', [
+                        [ 'div', 'id', 'node-111111', 'class', 'SeedDocument Document Text', '' ]
+                        [ 'div', 'class', 'seed', '' ]
+                    ] ]
+                    [ 'div', 'class', 'middle', [
+                        # [ 'div', [ [ 'button', 'class', 'add_buttonn', 'Add' ] ] ]
+                        # [ 'div', [ [ 'button', 'class', 'delete_buttonn', 'Delete' ] ] ]
+                        [ 'div', [ [ 'button', 'class', 'same_button', 'same' ] ] ]
+                        [ 'div', [ [ 'button', 'class', 'different_button', 'different' ] ] ]
+                        [ 'div', [ [ 'button', 'class', 'bad_button', 'bad annotation' ] ] ]
+                        [ 'div', [ [ 'button', 'class', 'next_candidate_button', 'next candidate' ] ] ]
+                        # [ 'div', [ [ 'button', 'class', 'first_undone_button', 'first undone' ] ] ]
+                    ] ]
+                    [ 'div', 'class', 'right', [
+                        [ 'div', 'id', 'node-222222', 'class', 'CandidateDocument Document Text', '' ]
+                        [ 'div', 'class', 'candidate', '' ]
+                    ] ]
+                ] ]
+            ] ]
+        CandidateListItem: ->
+            # s = if node.data().event then node.data().event.replace(/h/, '') else ''
+            # s = if node.data().event then 'x' else ''
+            node.append ldc_nodes.array2html [ 'div', 'class', 'Label', "Event " ] unless node.find('.Label').length is 1
+    Cmn2QualityAudit:
+        AudioListItem: ->
+            node.find('.Timestamps').wrapAll '<div class=AllAudio/>'
+        Audio1: ->
+            ldc_refresh_node.Cmn2QualityAudit.helper(0)
+        Audio2: ->
+            ldc_refresh_node.Cmn2QualityAudit.helper(1)
+        Audio3: ->
+            ldc_refresh_node.Cmn2QualityAudit.helper(2)
+        Audio4: ->
+            ldc_refresh_node.Cmn2QualityAudit.helper(3)
+        helper: (i) ->
+            obj = $('.Root').data().obj
+            button = ldc_source.get_audio_button1()
+            ldc_refresh_node.Cmn2QualityAudit.helper2 obj.meta.audio_id, obj.meta.children_ids[i], button
+        helper2: (parent_id, child_id, button) ->
+            obj = $('.Root').data().obj
+            node.find('.btn-group').hide()
+            # $('#node-' + hash.old_id + '-dummy').remove();
+            node.find('.label-warning').remove()
+            if node.data().buffer is undefined
+                ldc_source.get_audio_file_for_selector3 sel, parent_id, child_id, button
+            else
+                ldc_source.get_audio_file_for_selector3_callback sel, button
+    VastSadAudit2: #copied
+        AudioListItem: ->
+            node.find('.Timestamps').wrapAll '<div class=AllAudio/>'
+        Audio1: ->
+            ldc_refresh_node.Cmn2QualityAudit.helper(0)
+        Audio2: ->
+            ldc_refresh_node.Cmn2QualityAudit.helper(1)
+        Audio3: ->
+            ldc_refresh_node.Cmn2QualityAudit.helper(2)
+        Audio4: ->
+            ldc_refresh_node.Cmn2QualityAudit.helper(3)
+        helper: (i) ->
+            obj = $('.Root').data().obj
+            button = ldc_source.get_audio_button1()
+            ldc_refresh_node.Cmn2QualityAudit.helper2 obj.meta.audio_id, obj.meta.children_ids[i], button
+        helper2: (parent_id, child_id, button) ->
+            obj = $('.Root').data().obj
+            node.find('.btn-group').hide()
+            # $('#node-' + hash.old_id + '-dummy').remove();
+            node.find('.label-warning').remove()
+            if node.data().buffer is undefined
+                ldc_source.get_audio_file_for_selector3 sel, parent_id, child_id, button
+            else
+                ldc_source.get_audio_file_for_selector3_callback sel, button
+    Cmn2SpeakerAudit:
+        Audio1: ->
+            ldc_refresh_node.Cmn2SpeakerAudit.helper(0)
+        Audio2: ->
+            ldc_refresh_node.Cmn2SpeakerAudit.helper(1)
+        Audio3: ->
+            ldc_refresh_node.Cmn2SpeakerAudit.helper(2)
+        Audio4: ->
+            ldc_refresh_node.Cmn2SpeakerAudit.helper(3)
+        helper: (i) ->
+            obj = $('.Root').data().obj
+            button = ldc_source.get_audio_button2()
+            piid = node.parents('.AudioListItem').data().meta.id
+            $.each $('.AudioList').data().children, (jj, x) ->
+                if x.meta.id is piid
+                    q = obj.meta.quality_kit_metas[jj]
+                    if q
+                        ldc_refresh_node.Cmn2QualityAudit.helper2 q.audio_id, q.children_ids[i], button
+                    # $('.Instruction2 h3').each (i, x) ->
+                    #     if $(x).text() is 'Call 1'
+                    if i is 0
+                        t = "Call #{jj+1}, Audio #{q.audio_id}"
+                        t += " REFERENCE" if jj is 0
+                        $("#node-#{x.meta.id}").prepend "<h3>#{t}</h3>" if $("#node-#{x.meta.id} h3").length is 0
+                        $("#node-#{x.meta.id}").addClass 'first' if jj is 0
+            $('.Root').prepend("<h4 class=callset>Call Set #{obj.source.speaker}</h4>") if $('.callset').length == 0
+        Q1Radio: ->
+            obj = $('.Root').data().obj
+            y = switch obj.source.language
+                when 'ara-aeb'
+                    'Tunisian Arabic'
+                else
+                    'ERROR'
+            if node.find('h5').length is 0
+                node.find('.Q1Label').each (i, x) ->
+                    t = $(x).text().replace('X', y)
+                    $(x).html "<h5>#{t}</h5>"
+        Q2Radio: ->
+            if node.find('h5').length is 0
+                node.find('.Q2Label').each (i, x) ->
+                    t = $(x).text()
+                    $(x).html "<h5>#{t}</h5>"
+    LoreleiEdl:
+        Root: ->
+            obj = $('.Root').data().obj
+            ldc_click.handlers.LoreleiEdl.hide_all()
+            head = [ 'Name', 'Type', 'Mention', 'Status' ]
+            data = [ { name: 'name', type: 'type', mention: 'mention', status: 'status' } ]
+            ldc_nodes.table_helper1 '#entity_table', data, null, false, head, null, (x) ->
+                [ x.name, x.type, x.mention, x.status ]
+            $('.SearchLabel').html ldc_nodes.array2html [ 'div', 'id', 'search', 'search' ]
+            $('.Top').addClass('full')
+            $('.Left').addClass('half')
+            $('.Right').addClass('half')
+            $('.LinkList').addClass('full')
+            $('.BadList').addClass('full')
+            $('.MissingList').addClass('full')
+            rows = []
+            $.each obj.entities, (k,v) ->
+                a = [
+                    v.mention_text
+                    v.entity_type
+                    v.count
+                    '--'
+                ]
+                rows.push [ 'tr',  'class', 'nonselectedEnt', 'id', k, [ ['td', v.mention_text ], ['td', v.entity_type ], ['td', v.count ], ['td', 'class', 'entStatus', '--'] ] ]
+            table = ['table', 'id','entities',[ ['thead', [['tr', [['th','Name'], ['th','Type'], ['th','Mentions'], ['th', 'Status']] ]] ], ['tbody', rows] ]]
+            $('.EntityTableLabel').html( ldc_nodes.array2html(table) )
+            $('#entities').dataTable
+                destroy: true
+                paging: false
+                bJQueryUI: true
+                sDom: '<"top">rt<"bottom"lp><"clear">'
+            ldc_refresh_node.LoreleiEdl.EntityRef()
+        SearchLabel: ->
+            $('.SearchLabel').html ldc_nodes.array2html [ 'div', 'id', 'search', 'search' ]
+        LinkListItem: ->
+            header '.LinkListItemLabel, .DeleteLinkButton'
+        KBRef: ->
+            $.each $('.KBRef'), ->
+                $(this).find('.ref-text').text($(this).data().value.value)
+                $(this).find('.ref-set').remove()
+        EntityRef: ->
+            $.each $('.EntityRef'), ->
+                $(this).find('.ref-text').text($(this).data().value.value)
+                if not $(this).parent('.MissingListItem').length
+                    $(this).find('.ref-set').remove()
+            $.each $('.entStatus'), ->
+                a = 0
+                that = $(this)
+                $.each $('.EntityRef'), ->
+                    if $(this).data().value.value is that.parent('tr').attr('id')
+                        if $(this).parent('.LinkListItem').length
+                            a += 1
+                        if $(this).parent('.BadListItem').length
+                            a = "BAD"
+                        if $(this).parent('.MissingListItem').length
+                            a = "MISSING"
+                that.text(a)
+        # EntityTableLabel: ->
+        #     $('.EntityTableLabel').html( ldc_nodes.array2html(table) )
+    KbpAssessment2017:
+        EntityRefDoc: ->
+            obj = $('.Root').data().obj
+            $('.Root').before("<div>#{obj.query_mention_top.text}</div>")
+            $('.Root').before("<div>#{obj.mentions.query_id}:#{obj.mentions.slot0}</div>")
+            # node.children().each (i, x) ->
+            #     console.log obj.mentions[i]
+        ResponseID: (i) ->
+            obj = $('.Root').data().obj
+            response = node.data().value.value
+            node.prepend ldc_nodes.array2html [ 'div', [
+                [ 'div', response ]
+            ] ]
+
+            m = obj.mentions[response]
+            if m
+                text = m.filler.text
+            else
+                text = ''
+            if node.siblings('.extralabels').length is 0
+                node.siblings('.FillerAssessment').before ldc_nodes.array2html [ 'div', 'class', 'extralabels', [
+                    [ 'div', [
+                        [ 'div', [ [ 'b', 'Filler' ] ] ]
+                        [ 'div', 'class', 'filler_text', text ]
+                    ] ]
+                ] ]
+
+                if m
+                    just = ( [ 'div', x.text ] for x in m.justifications )
+                else
+                    just = []
+                node.siblings('.JustificationAssessment').before ldc_nodes.array2html [ 'div', [
+                    [ 'div', 'class', 'just_text', [
+                        [ 'div', [ [ 'b', 'Justifications' ] ] ]
+                        [ 'div', just ]
+                    ] ]
+                ] ]
+        AssessmentListItem: (i) ->
+            obj = $('.Root').data().obj
+            # response = node.find('.ResponseID').data().value.value
+            # text = obj.mentions[response].filler[3]
+            node.addClass('well-lesser')
+        EntityListItem: ->
+            header '.EntityListItemLabel, .DeleteEntityButton'
+            node.find('.mentions').remove()
+            a = []
+            type = null
+            $.each node.data().refs, (i, x) ->
+                mention = $("#node-#{i}").parents('.AssessmentListItem')
+                type = "MENTIONS"
+                a.push [ 'div', 'id', "mention-#{mention.data().meta.id}", 'class', 'mention flex', [
+                    [ 'div', "mention #{mention.data().meta.id}: " ]
+                    [ 'div', 'class', 'entity_mention_text', mention.find('.filler_text').text() ]
+                    [ 'button', 'class', 'btn btn-small uncoref_mention', 'unmerge' ]
+                    [ 'button', 'class', 'btn btn-small handle_mention', 'handle' ]
+                    [ 'button', 'class', 'btn btn-small show_entity_mention2', 'show' ]
+                ] ]
+            # a = [ 'div', 'test' ]
+            # if a.length is 0
+            #     a.push [ 'button', 'class', 'btn delete-entity', 'delete entity' ]
+            node.append array2html [ 'div', 'class', 'mentions', a ]
+            # node.prepend array2html [ 'div', 'class', 'header', "#{iid} #{type}" ]
+        Entity: ->
+            obj = $('.Root').data().obj
+            $('.coref').remove()
+            types = {}
+            $('.EntityRef.empty').each (i, x) ->
+                type = $(x).siblings('.FillerAssessment').data().value.value
+                return unless type is 'correct' or type is 'inexact'
+                response = $(x).siblings('.ResponseID').data().value.value
+                # console.log "RESPONSE #{response}"
+                type = 'MENTIONS'
+                if type
+                    types[type] = [] unless types[type]
+                    text = obj.mentions[response].filler.text #$(x).siblings('.FillerText, .ExistingFillerText').data().value.text
+                    types[type].push [ 'div', 'id', "coref-mention-#{$(x).data().meta.id}", 'class', 'coref_mention flex', [
+                        [ 'button', 'class', 'btn btn-small show_mention2', 'show' ]
+                        [ 'div', text ]
+                    ] ]
+            mentions = for type, a of types
+                [ 'div', 'class', 'well-lesser', [ [ 'div', type ] ].concat(a) ]
+            b = [
+                [ 'div', 'class', 'flex', [
+                    [ 'button', 'class', 'btn-success btn-small create_entity_button', 'merge' ]
+                    [ 'button', 'class', 'btn-success btn-small merge_mentions_button', 'merge into' ]
+                ] ] ]
+            a = b.concat mentions
+            $('.EntityList').before array2html [ 'div', 'class', 'coref', a ]
+        HandleMentionRef: ->
+            ref = node.data().value.value
+            if ref
+                mention = $("#node-#{ref}")
+                id = mention.data().meta.id
+                node.html array2html [ 'div', 'class', 'flex', [
+                    [ 'div', 'class', 'handlesub1', "handle #{id}: " ]
+                    [ 'div', 'class', 'handlesub2', mention.find('.filler_text').text() ]
+                ] ]
+            else
+                node.html ''
+    SituationFrames:
+        # Document: ->
+        #     node.after "<button class=\"btn NextTweetButton\">Next Tweet</button>"
+        # MentionListItem: ->
+        EntityRef: (node) ->
+            if node.hasClass 'empty'
+                node.html('')
+        EntityListItem: (node) ->
+            node.find('.mentions, .header').remove()
+            a = []
+            b = {}
+            type = null
+            $.each node.data().refs, (i, x) ->
+                mention = $("#node-#{i}").parents('.MentionListItem')
+                type = mention.find('.MentionLevelType').data().value.value
+                text = mention.find('.Text').data().value.text
+                b["#{text}-#{i}"] = [ 'div', 'id', "mention-#{mention.data().meta.id}", 'class', 'mention flex', [
+                    [ 'div', "mention #{mention.data().meta.id}: " ]
+                    [ 'div', 'class', 'entity_mention_text', text ]
+                    [ 'button', 'class', 'btn btn-small uncoref_mention', 'unmerge' ]
+                    [ 'button', 'class', 'btn btn-small handle_mention', 'handle' ]
+                ] ]
+            $.each Object.keys(b).sort(), (i, k) ->
+                a.push b[k]
+            if a.length is 0
+                a.push [ 'button', 'class', 'btn delete-entity', 'delete entity' ]
+            node.append ldc_nodes.array2html [ 'div', 'class', 'mentions', a ]
+            node.prepend ldc_nodes.array2html [ 'div', 'class', 'header', "#{node.data().meta.id} #{type}" ]
+        RSet: (node) ->
+            node.find('.entities').remove()
+            params = $('.Root').data().set_params
+            params.types = [ 'PER', 'ORG', 'GPE' ]
+            params.s8 = '.ReportedSetLabel, .ResolvedSetLabel'
+            hh = { none: 'NONE' }
+            h = ldc_nodes.choose_entities params
+            ldc_nodes.choose_entities2 params.s8, node, h, hh
+        show_helper: (x, text) ->
+            [ 'div', 'id', "coref-mention-#{$(x).data().meta.id}", 'class', 'coref_mention flex', [
+                [ 'button', 'class', 'btn btn-small show_mention', 'show' ]
+                [ 'div', text ]
+            ] ]
+        Entity: (node) ->
+            $('.coref').remove()
+            types = {}
+            $('.EntityRef.empty').each (i, x) ->
+                type = $(x).siblings('.MentionLevelType').data().value.value
+                if type
+                    types[type] = {} unless types[type]
+                    text = $(x).siblings('.MentionText').data().value.text
+                    # types[type]["#{text}-#{i}"] = [ 'div', 'id', "coref-mention-#{$(x).data().meta.id}", 'class', 'coref_mention', text ]
+                    types[type]["#{text}-#{i}"] = ldc_refresh_node.SituationFrames.show_helper x, text
+            keys = Object.keys(types)
+            keys.sort()
+            # mentions = for type, h of types
+            mentions = []
+            $.each keys, (i, type) ->
+                h = types[type]
+                a = []
+                $.each Object.keys(h).sort(), (i, k) ->
+                    a.push h[k]
+                mentions.push [ 'div', 'class', 'well-lesser', [ [ 'div', type ] ].concat(a) ]
+            $('.FinishCorefButton').after ldc_nodes.array2html [ 'div', 'class', 'coref',
+                mentions
+            ]
+            # $('.coref').hide() if $('.CorefFinished').hasClass('empty') is false
+        HandleMentionRef: (node) ->
+            ref = node.data().value.value
+            if ref
+                mention = $("#node-#{ref}")
+                if mention.length is 1
+                    id = mention.data().meta.id
+                    d = mention.find('.Text').data()
+                    if d and d.value.text
+                        dt = d.value.text
+                    else
+                        dt = 'MISSING'
+                    node.html ldc_nodes.array2html [ 'div', 'class', 'flex', [
+                        [ 'div', 'class', 'handlesub1', "handle #{id}: " ]
+                        [ 'div', 'class', 'handlesub2', dt ]
+                    ] ]
+                else
+                    node.html ''
+            else
+                node.html ''
+        NeedFrameListItem: (node) ->
+            header '.NeedFrameLabel, .DeleteNeedButton'
+        IssueFrameListItem: (node) ->
+            header '.IssueFrameLabel, .DeleteIssueButton'
+        TimeStatus: (node) ->
+            if node.parents('.NeedFrameListItem').length is 1
+                node.find('.TimeStatusLabel').text('Need Status')
+                if node.find('label').length is 5
+                    node.find('label').each (i, x) ->
+                        if i > 2
+                            $(x).remove()
+            else
+                node.find('.TimeStatusLabel').text('Issue Status')
+                if node.find('label').length is 5
+                    node.find('label').each (i, x) ->
+                        if i < 3
+                            $(x).remove()
+        MentionListItem: (node) ->
+            header '.MentionListItemLabel, .DeleteMentionButton'
+        Place: (node) ->
+            node.find('.entities').remove()
+            node.find('.ChooseEntitiesButton').hide()
+            # node.find('.SetEntitiesButton').show()
+            params = $('.Root').data().set_params
+            if node.parents('.NeedFrameListItem').length is 1
+                params.types = [ 'GPE', 'LOC' ]
+            else
+                params.types = [ 'GPE' ]
+            params.s8 = '.PlaceLabel'
+            hh = { none: 'NONE' }
+            h = ldc_nodes.choose_entities params
+            ldc_nodes.choose_entities2 params.s8, node, h, hh
+            p = node.data().meta.parent
+            pp = p.meta.parent
+            sel = "#node-#{p.meta.id}-table"
+            table_name = "#{pp.meta.name}Table"
+            t = $(".#{table_name}").DataTable()
+            if $(sel).length is 1
+                name = 'Place'
+                t.cell(sel,"#{name}:name").data(ldc_nodes.tablecinner(node.data())).draw()
+
+    VastSadAudit:
+        # Q3aRadio: ->
+        #     lang = 'X'
+        #     node.find('label').each (i, x) ->
+        #         $(x).text $(x).text().replace('anguage', lang)
+        AudioListItem: ->
+            node.find('.Timestamps').wrapAll '<div class=AllAudio/>'
+        Audio: ->
+            ldc_refresh_node.VastSadAudit.helper(0)
+        helper: (i) ->
+            obj = $('.Root').data().obj
+            button = ldc_source.get_audio_button2()
+            x = 6196936
+            x = 6177876
+            p = obj.meta.audio_id
+            c = obj.meta.children_ids[0]
+            ldc_refresh_node.Cmn2QualityAudit.helper2 p, c, button
+            $('.SegInfoLabel').text "Segment: #{obj.meta.original_uid} start: #{obj.source.btime} end: #{obj.source.etime}"
+)()

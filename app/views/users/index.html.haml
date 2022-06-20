@@ -1,0 +1,20 @@
+-content_for :head do
+  = javascript_pack_tag 'users', defer: true
+
+%strong All users
+
+%table#users.display{:'data-source' => users_path(format: :json, json_format: :datatable)}
+  %thead
+    %tr
+      %th Id
+      %th Name
+      %th Edit
+      %th{:title => 'Controls whether the user will be required to reset their name on the next login attempt'} Reset Name
+      %th Delete
+  %tbody
+    
+
+#name_reset_dialog{:title => 'Reset Name'}
+  =render :partial => 'name_resets/form'
+
+#action_specific_js.init_index

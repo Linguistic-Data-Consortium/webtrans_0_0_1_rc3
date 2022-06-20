@@ -1,0 +1,4 @@
+= form_for(@file_set, remote: true, html: { "data-type" => 'json' }) do |f|
+  = f.label :files, 'files'
+  = f.file_field :files, direct_upload: true, class: 'form-control', multiple: true
+  = f.submit "Submit", data: { disable_with: 'sending...' }

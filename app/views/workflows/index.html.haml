@@ -1,0 +1,32 @@
+-content_for :head do
+  =javascript_include_tag 'workflows'
+
+.full
+  .half
+    %strong All Workflows
+  .half
+    .flexright
+      =render :partial => 'new'
+
+%table.display
+  %thead
+    %tr
+      %th Id
+      %th Name
+      %th Lock
+      %th Delete
+  %tbody
+    -@workflows.each do |workflow|
+      %tr
+        %td= workflow.id
+        %td= link_to workflow.name, workflow_path(workflow)
+        %td
+          -if Lock.by_type_and_num('workflow', workflow.id).length != 0
+            = link_to "unlock", "/workflows/#{workflow.id}/set_lock/false", :data => {:confirm => "This will unlock #{workflow.name} and re-allow all access to this workflow, please confirm"}
+          -else
+            = link_to "lock", "/workflows/#{workflow.id}/set_lock/true", :data => {:confirm => "This will lock #{workflow.name} and prevent any access to this workflow, please confirm"}
+        %td= link_to "delete", "#", :class => 'delete_workflow'
+
+-content_for :action_specific_js do 
+  ldc_workflows.init_index();  
+  

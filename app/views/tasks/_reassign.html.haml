@@ -1,0 +1,60 @@
+#reassign.modal
+  %label
+    .modal-trigger
+      %button Reassign / change kit states
+  .modal-fade-screen
+    .modal-inner
+      .modal-close
+      %h1#modalHeader= "Reassign kits for #{@task.name}"
+      = form_for [@project, @task], :url => "/projects/#{@project.id}/tasks/#{@task.id}/reassign_many_kits" do |f|
+        .modal-body
+          %div.expander
+            = link_to "Instructions", 'javascript:void(0)', class: 'expander-trigger expander-hidden'
+            .expander-content
+              %div You must provide an end state and/or end user. You must also provide either a list of kit ids, OR a start state and/or start_user as input.
+              %div If you provide a start state and user, any kits in that state belonging to that user will be reassigned.
+              %div If you provide only a state, all kits in that state for this task will be reassigned (same for user).
+              %div If you provide a list of kit ids, this overrides the start_state or start_user fields.
+              %div If you do not provide an end state, only the user will be changed. If you do not provide an end user, only the state will be changed.
+          %div.expander
+            = link_to "Kit State Descriptions", 'javascript:void(0)', class: 'expander-trigger expander-hidden'
+            .expander-content
+              %div Assigned: current kit being worked on by a user. Only set by webann itself when a user clicks "start".
+              %div Unassigned: kit is not being worked on and is available to be worked on by a user.
+              %div Done: Kit has been completed.
+              %div Broken: Kit cannot be completed and was broken per instructions.
+              %div Hold: Kit is temporarily removed from being available for work.
+              %div Excluded: There is no intention to annotate this kit.
+          %div
+            %label.inline Start User
+            <select name="task[start_user]">
+            <option value="" selected="selected">Not selected</option>
+            -@kit_users.each do |user|
+              <option value="#{user.id}">#{user.name}</option>
+            </select>
+          %div
+            %label.inline Start State
+            <select name="task[start_state]">
+            <option value="" selected="selected">Not selected</option>
+            -@kit_states.each do |state|
+              <option value="#{state}">#{state}</option>
+            </select>
+          %div
+            %label.inline End User
+            <select name="task[end_user]">
+            <option value="" selected="selected">Not selected</option>
+            -@task.users.each do |user|
+              <option value="#{user.id}">#{user.name}</option>
+            </select>
+          %div
+            %label.inline End State
+            <select name="task[end_state]">
+            <option value="" selected="selected">Not selected</option>
+            -(@kit_states - ["assigned"]).each do |state|
+              <option value="#{state}">#{state}</option>
+            </select>
+          %div
+            %label Kits list
+            <textarea name="task[uids]" id="task_uids" cols="50" rows="15"></textarea>
+        .modal-footer  
+          = f.submit 'Save', :class => 'btn btn-primary'

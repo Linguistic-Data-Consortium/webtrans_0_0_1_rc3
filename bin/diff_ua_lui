@@ -1,0 +1,116 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+@lui_path = "../lui"
+@ua_path = "."
+@tmp_path = "tmp"
+opts = OptionParser.new do |o|
+  o.banner = "Usage: diff_ua_lui [options] table_name"
+  o.on(
+    "-l",
+    "--lui-path PATH",
+    "Path to LUI repo (default=#@lui_path)"
+  ) do |path|
+    @lui_path = path
+  end
+  o.on(
+    "-u",
+    "--ua-path PATH",
+    "Path to UA repo (default=#@ua_path)"
+  ) do |path|
+    @ua_path = path
+  end
+  o.on(
+    "-t",
+    "--temp-dir PATH",
+    "Path to temp dir for diff files (default=#@tmp_path)"
+  ) do |path|
+    @tmp_path = path
+  end
+  o.on(
+    "-h",
+    "--help",
+    "Display help info"
+  ) do
+    puts o
+    exit 0
+  end
+end
+
+opts.parse!
+if ARGV.size != 1
+  puts opts
+  exit 1
+end
+
+@table_name = ARGV.first
+
+def path_for(base, table_name, component)
+  case component
+  when "view"
+    "#{base}/app/views/#{table_name}"
+  else
+    "#{base}/app/#{component}s/#{table_name}_#{component}.rb"
+  end
+end
+
+def extract_lines(table_name, path, regex)
+  lines = []
+  in_match = false
+  File.readlines(path).each do |line|
+    if line.match(regex)
+      in_match = ($1 == table_name)
+    end
+    if in_match
+      lines << line
+    end
+  end
+  lines.join
+end
+
+def extract_routes(table_name, base_path)
+  extract_lines(table_name, "#{base_path}/config/routes.rb", /\bresources?\b[^:*]:(\w+)/)
+end
+
+def extract_schema(table_name, base_path)
+  extract_lines(table_name, "#{base_path}/db/schema.rb", /\bcreate_table "([^"]+)/)
+end
+
+def diff_tmp(label, table_name, path1, path2)
+  puts "#{label}:"
+  tmp_paths = [path1, path2].each_with_index.map do |path, i|
+    "#@tmp_path/#{label}_#{table_name}_#{i}"
+  end
+  [path1, path2].zip(tmp_paths) do |path, tmpfile|
+    File.write(tmpfile, yield(table_name, path1))
+  end
+  do_diff(tmp_paths[0], tmp_paths[1])
+end
+
+def diff_routes(table_name, path1, path2)
+  diff_tmp("routes", table_name, path1, path2) do |tn, path|
+    extract_routes(tn, path)
+  end
+end
+
+def diff_schema(table_name, path1, path2)
+  diff_tmp("schema", table_name, path1, path2) do |tn, path|
+    extract_schema(tn, path)
+  end
+end
+
+def do_diff(file1, file2)
+  system 'diff', '-r', file1, file2
+end
+
+%w(controller model view).each do |component|
+  puts "#{component}:"
+  do_diff(
+    path_for(@ua_path, @table_name, component),
+    path_for(@lui_path, @table_name, component)
+  )
+end
+
+diff_routes(@table_name, @ua_path, @lui_path)
+diff_schema(@table_name, @ua_path, @lui_path)

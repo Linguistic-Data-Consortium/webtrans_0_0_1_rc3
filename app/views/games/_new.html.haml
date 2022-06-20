@@ -1,0 +1,13 @@
+#add_game_modal.modal
+  %label
+    .modal-trigger
+      %button Create Game
+  .modal-fade-screen
+    .modal-inner
+      .modal-close
+      .modal-body
+        %h1 Add Game
+        = form_for(@game) do |f|
+          %label Name
+          = f.text_field :name
+          = f.submit 'Save', :class => 'btn btn-primary'

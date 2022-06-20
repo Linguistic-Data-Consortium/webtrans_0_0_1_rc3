@@ -1,0 +1,15 @@
+#add_preference_type_modal.modal
+  %label
+    .modal-trigger
+      %button Create Preference Settings
+  .modal-fade-screen
+    .modal-inner
+      .modal-close
+      .modal-body
+        %h1 Add Preference Settings
+        = form_for(@preference_setting) do |f|
+          %label User
+          = collection_select(:preference_setting, :user_id, @users, :id, :name, {}, {id: "user_select"})
+          %label Preference Type
+          = collection_select(:preference_setting, :preference_type_id, @preference_types, :id, :name, {}, {id: "preference_type_select"})
+          = f.submit 'Save', :class => 'btn btn-primary'

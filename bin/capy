@@ -1,0 +1,115 @@
+#!/usr/bin/env ruby
+
+require 'digest/md5'
+require 'capybara/dsl'
+Capybara.current_driver = :selenium
+Capybara.register_driver :selenium do |app|
+  Capybara::Selenium::Driver.new(app, :browser => :chrome)
+end
+Capybara.app_host = 'http://localhost:3005'
+include Capybara::DSL
+
+name = 'xjqienviqubuwwx'
+
+visit '/'
+fill_in 'session_name', with: 'jdwright'
+fill_in 'session_password', with: 'jdwright'
+click_on 'Sign in'
+#sleep # confirmation
+click_on 'Continue'
+#find('.keyboard').click
+#find('.keyboard').send_keys 'h'
+#find('.waveform_help_screen').send_keys 'h'
+find('.keyboard').send_keys ';;;x'
+find('.keyboard').send_keys :enter
+sleep
+click_on 'project'
+fill_in 'project_name', with: name
+fill_in 'project_title', with: name
+fill_in 'project_subtitle', with: 'x'
+fill_in 'project_about', with: 'x'
+click_on 'Save'
+click_on 'task'
+fill_in 'task_name', with: 'x'
+fill_in 'task_title', with: 'x'
+click_on 'Save'
+find('#dataset').click
+fill_in 'data_set_name', with: 'x'
+fill_in 'data_set_description', with: 'x'
+attach_file 'data_set_spec', '/Users/jdwright/Downloads/ascope/manifest.tsv'
+attach_file 'data_set_files', '/Users/jdwright/Downloads/ascope/rainbow.txt'
+click_on 'Save'
+click_on 'template'
+find('#class_def_media_type_text').click
+select 'StartStop1', from: 'class_def_preselection1'
+select 'StartStop2', from: 'class_def_preselection2'
+find('#class_def_user_selection_yes').click
+select 'Min', from: 'class_def_user_selection_min'
+select 'Max', from: 'class_def_user_selection_max'
+select 'UID', from: 'class_def_media_content'
+find('#class_def_language_selector_no').click
+select 'ID', from: 'class_def_prompt_id_field'
+[
+  '#class_def_input_primary_no',
+  '#class_def_input_secondary_no',
+  '#class_def_audio_response_no',
+  '#class_def_text_annotation_no',
+  '#class_def_multiple_choice_no',
+  '#class_def_skip_no',
+  '#class_def_report_no'
+].each do |x|
+  find(x).click
+end
+click_on 'Save'
+click_on 'Start Now'
+[
+  [ [9, 16], [26, 34] ],
+  [ [ 92, 98], [ 105, 112 ] ],
+  [ [ 139, 147], [ 149, 154 ] ],
+  [ [ 188, 192], [ 194, 197 ] ],
+].each do |x|
+  y1, y2 = x
+  sleep 1
+  execute_script "window.list_template.sentence_test(#{y1.join(',')},0)"
+  sleep 1
+  execute_script "window.list_template.sentence_test(#{y2.join(',')},1)"
+  sleep 1
+  # find('.SubmitButton').click unless x.first.first == 188
+  # find('.SubmitButtonLast').click unless x.first.first == 188
+  click_on('Submit') unless x.first.first == 188
+end
+find('.underline-rect-29').click
+click_on 'No'
+find('.underline-rect-29').click
+click_on 'Yes'
+sleep 1
+click_on 'jdwright'
+x = find('a', text: name).find(:xpath, '..').find(:xpath, '..').find(:xpath, '..')
+x = x.find(:xpath, 'td[3]')
+x = x.find(:xpath, 'a[2]')
+x.click
+task_id = x[:href].split('=').last
+fn = nil
+while fn.nil?
+  fn = Dir["/Users/jdwright/Downloads/LanguageArc_Task_#{task_id}_2*.tsv"].last
+  puts 'sleeping'
+  sleep 1
+end
+header = nil
+s = File.readlines(fn).map { |x|
+  a = x.chomp.split "\t"
+  header ||= a
+  %w[ PromptID Text Beg End ].map { |x| a[header.index(x)] }.join
+}.sort.join "\n"
+# s.unshift s.last.dup
+# s.pop
+# s = s.join "\n"
+puts s
+puts Digest::MD5.hexdigest(s)
+if Digest::MD5.hexdigest(s).to_s == '50fec7c3b38587cdc784ffc4a7a19887'
+  puts 'good'
+else
+  puts 'bad'
+end
+
+sleep

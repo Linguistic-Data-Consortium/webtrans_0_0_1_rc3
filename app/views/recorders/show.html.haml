@@ -1,0 +1,49 @@
+-content_for :head do
+  = javascript_include_tag "annotate"
+  = javascript_include_tag "source"
+  = javascript_include_tag "nodes"
+  = javascript_include_tag "audio_recording"
+  = javascript_include_tag "stop_watch.js"
+  = javascript_pack_tag "recorder"
+
+.view
+  no file open
+%button.show_tabs
+  Start
+
+%ul.nav-tabs.firstul
+  %li.tab-header-and-content
+    =link_to 'Files', "javascript:void(0)", class: 'tab-link'
+    .tab-content
+      .files
+        #files_for_task
+  %li.tab-header-and-content
+    =link_to 'Record', "javascript:void(0)", class: 'tab-link'
+    .tab-content
+      .record
+        %div
+          .current_sample_rate
+          %input{ style: 'width: 100px' }
+          %button.set_sample_rate
+            Set Sample Rate
+        %div
+          filename
+          %input#filename
+      .node
+  %li.tab-header-and-content
+    =link_to 'Levels', "javascript:void(0)", class: 'tab-link'
+    .tab-content
+      .levels
+      .node2
+  %li.tab-header-and-content
+    =link_to 'Upload', "javascript:void(0)", class: 'tab-link'
+    .tab-content
+      .upload1
+        upload
+      .upload2
+        = render 'sources/upload'
+      
+
+
+-content_for :action_specific_js do
+  != "ldc_nodes.record(#{@sr})"

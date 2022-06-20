@@ -1,0 +1,31 @@
+%hr
+%ul.nav-tabs.firstul
+  %li.tab-header-and-content
+    =link_to 'Kits', "javascript:void(0)", class: 'tab-link'
+    .tab-content
+      .helpp
+        These are kits that can be returned to by clicking Goto.  The name field
+        can be anything and can be edited when closing the kit.
+      .kits
+        #kits_for_task
+          loading...
+  %li.tab-header-and-content
+    =link_to 'Upload Source', "javascript:void(0)", class: 'tab-link'
+    .tab-content
+  -# %li.tab-header-and-content
+  -#   =link_to 'Upload File Set', "javascript:void(0)", class: 'tab-link'
+  -#   .tab-content
+  -#     .upload11
+  -#       upload
+  -#     .upload21
+  -#       = render 'file_sets/uploads'
+  -#     .upload31
+  -#     .upload41
+  -#       %p
+  -#         After uploading, a code snippet is shown for creating a url
+  -#         for that file in Ruby code.  The part that varies is the integer source
+  -#         id.  This id can also be found on the Files tab.  In an erb file,
+  -#         the ruby code would have to be within <%= %> tags.  In a haml file, the
+  -#         ruby code would have to follow = (and appropripate indentation).
+  -#     .upload51
+  -#       = @du

@@ -1,0 +1,69 @@
+<div id="level_testing_page">
+    <div class="recording">
+        <h1 style = "align: center;">Level Testing</h1>
+        <h3 style = "align: center;">Please Hit Start And Count From 1 To 3 To Test Your Mic Level</h3>
+        <div>
+            <canvas class="meter" style = "align-content: center;"></canvas>
+        </div>
+        <div class="sign" style = "align-content : center;"></div>
+            <div class="buttons" style = "align-content : center;">
+                <button class="start" style = "align-content : center;">Start</button>
+                <button class="stop" style = "align-content : center;">Stop</button>
+            </div>
+            <br>
+            <div class="instructions1" style="display: none">
+                <div class="mainInstructions" style = "float: center;">
+                    Looks Like Your Mic Volume is Perfect!<br />
+                    Please Press Next to go to Next Screen<br />
+                </div>
+            </div>
+            <div class="instructions2" style="display: none">
+                <div class="mainInstructions" style = "align : center;float: center;">
+                    Looks Like Your Mic Volume is High!<br />
+                    Follow the Instructions Below to Fix it.<br /><br />
+                </div>
+                <div class="windowOS" style = "align-content : center;float: left; width: 50%;">
+                    <p style = "align-content : center;">Windows</p>
+                    1) Click Start & Type mmsys.cpl in the Start Search Box<br />
+                    2) Go to the Recording Tab<br />
+                    3) Right Click on the Microphone to access the Properties Dialog Box<br />
+                    4) Go to Levels Tab<br />
+                    5) Use the Volume Slider to Decrease the Mic Gain<br />
+                    6) Hit Apply, and Try our Level Testing<br />       
+                </div>
+                <div class="macOS" style = "align-content : center; float: right; width: 50%;">
+                    <p style = "align-content : center;">Mac</p>
+                    1) Click the Gray 'System Preferences' Icon in your MacBook's Dock.<br />
+                    2) Click 'Sound' in the Hardware Group<br />
+                    3) Click the 'Input' Tab to Access Microphone Settings. Click 'Internal Microphone' in the Devices List to Adjust the Microphone settings for your Mac's Internal Mic, or Click the Name of Any External USB Microphone you have Installed.<br />
+                    4) Slide the 'Input Volume' Slider to the Left to Decrease the Microphone's Volume<br />
+                    5) Try our Level Testing again<br />
+                </div>
+            </div>
+            <div class="instructions3" style="display: none">
+                <div class="mainInstructions" style = "align : center;float: center;">
+                    Looks Like Your Mic Volume is Low!<br />
+                    Follow the Instructions Below to Fix it.<br /><br />
+                </div>
+                <div class="windowOS" style = "align-content : center;float: left; width: 50%;">
+                    <p style = "align-content : center;">Windows</p>
+                    1) Click Start & Type mmsys.cpl in the Start Search Box<br />
+                    2) Go to the Recording Tab<br />
+                    3) Right Click on the Microphone to access the Properties Dialog Box<br />
+                    4) Go to Levels Tab<br />
+                    5) Use the Volume Slider to Increase the Mic Gain<br />
+                    6) Hit Apply, and Try our Level Testing<br />       
+                </div>
+                <div class="macOS" style = "align-content : center;float: right; width: 50%;">
+                    <p style = "align-content : center;">Mac</p>
+                    1) Click the Gray 'System Preferences' Icon in your MacBook's Dock.<br />
+                    2) Click 'Sound' in the Hardware Group<br />
+                    3) Click the 'Input' Tab to Access Microphone Settings. Click 'Internal Microphone' in the Devices List to Adjust the Microphone settings for your Mac's Internal Mic, or Click the Name of Any External USB Microphone you have Installed.<br />
+                    4) Slide the 'Input Volume' Slider to the Left to Increase the Microphone's Volume<br />
+                    5) Try our Level Testing again<br />
+                </div>
+            </div>
+            <div id="mic_test_next"><button class="next_screen">NEXT</button></div>
+        </div>
+    </div>
+</div>

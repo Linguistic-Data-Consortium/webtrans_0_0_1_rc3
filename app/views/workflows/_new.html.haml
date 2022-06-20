@@ -1,0 +1,23 @@
+.modal
+  .modal-trigger
+    %button Add Workflow
+  .modal-fade-screen
+    .modal-inner
+      .modal-close
+      %h3#modalHeader Add Workflow
+      = form_for @workflow, :as => :workflow do |f|
+        .modal-body
+          %div
+            %label.inline Name
+            = f.text_field :name
+          %div
+            %label.inline Type
+            = select_tag "workflow[type]", options_for_select(@workflow.types), :prompt => "Select something"
+          %div
+            %label.inline User States
+            = f.text_field :user_states
+          %div
+            %label Description (optional)
+            = f.text_area :description, :rows => 10
+        .modal-footer
+          = f.submit 'Save', :class => 'btn btn-primary'

@@ -1,0 +1,15 @@
+#tool_editor {
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tool-maker {
+  margin-top: 2em;
+  padding: 1em;
+  max-width: 50rem;
+  border: 1px solid black;
+  background: #c4e2ff;
+  border-radius: 5px;
+}
