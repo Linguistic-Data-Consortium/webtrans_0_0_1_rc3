@@ -77,12 +77,7 @@ RUN find vendor -name "*.o" -delete \
      apt-get upgrade -yqq && \
      apt-get install -yqq --no-install-recommends nodejs ffmpeg libpq5 imagemagick openssh-server libsqlite3-0
  RUN apt-get autoclean
- COPY shell/sshd_config /etc/ssh/sshd_config
- COPY shell/docker-entrypoint.sh /ua/docker-entrypoint.sh
- COPY shell/bashrc /root/.bashrc
- ADD shell/bin.tgz  /root/
 
- ADD https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem /root/.postgresql/root.crt
  WORKDIR /ua
  ENTRYPOINT ["./docker-entrypoint.sh"]
  CMD bundle exec bin/rails s -b 0.0.0.0 
